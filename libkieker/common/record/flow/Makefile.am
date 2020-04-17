@@ -1,0 +1,2 @@
+SUBDIRS=thread trace
+ACLOCAL_AMFLAGS=-I m4

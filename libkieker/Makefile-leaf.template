@@ -1,0 +1,15 @@
+noinst_LTLIBRARIES = lib%DIRNAME%.la
+
+#######################################
+# Build information for each library
+
+# Sources for libkieker
+lib%DIRNAME%_la_SOURCES = %CFILES%
+
+# Linker options libTestProgram
+lib%DIRNAME%_la_LDFLAGS =
+
+# Compiler options. Here we are adding the include directory
+# to be searched for headers included in the source code.
+lib%DIRNAME%_la_CPPFLAGS = -I$(top_srcdir)/libkieker/include
+
