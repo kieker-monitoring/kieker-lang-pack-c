@@ -1,19 +1,25 @@
-#######################################
-# The list of libraries we are building seperated by spaces.
-# The 'lib_' indicates that these build products will be installed
-# in the $(libdir) directory. For example /usr/lib
-lib_LTLIBRARIES = libkiekermon.la
+SUBDIRS=common monitoring
+ACLOCAL_AMFLAGS=-I m4
 
-#######################################
-# Build information for each library
+lib_LTLIBRARIES = libkieker.la
 
-# Sources for libkiekermon
-libkiekermon_la_SOURCES = kieker_io.c kieker_serialize.c kieker_lookup.c
+libkieker_la_SOURCES = 
+libkieker_la_LIBADD = common/record/controlflow/libcontrolflow.la \
+	common/record/misc/libmisc.la \
+	common/record/system/libsystem.la \
+	common/record/database/libdatabase.la \
+	common/record/jvm/libjvm.la \
+	common/record/flow/trace/concurrency/libconcurrency.la \
+	common/record/flow/trace/concurrency/monitor/libmonitor.la \
+	common/record/flow/trace/operation/object/libobject.la \
+	common/record/flow/trace/operation/constructor/libconstructor.la \
+	common/record/flow/trace/operation/constructor/object/libobject.la \
+	common/record/flow/trace/operation/liboperation.la \
+	common/record/flow/trace/libtrace.la \
+	common/record/flow/thread/libthread.la \
+	common/record/remotecontrol/libremotecontrol.la \
+	common/utilities/libutilities.la \
+	monitoring/controller/libcontroller.la \
+	monitoring/probes/libprobes.la
 
-# Linker options libTestProgram
-libkiekermon_la_LDFLAGS = 
-
-# Compiler options. Here we are adding the include directory
-# to be searched for headers included in the source code.
-libkiekermon_la_CPPFLAGS = -I$(top_srcdir)/include
 

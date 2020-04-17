@@ -1,7 +1,8 @@
 #include "kieker_lookup.h"
 
 #include <stdio.h>
-
+#include <stdlib.h>
+#include <string.h>
 
 /* --- internal functions */
 /* Note: this is an simple ineffective reverse lookup of keys by values */
@@ -53,7 +54,8 @@ void kieker_lookup_string_list_add_value(const char* string) {
 		kieker_lookup_table_max+=KIEKER_LOOKUP_TABLE_INC;
 		kieker_lookup_string_list = realloc (kieker_lookup_string_list, kieker_lookup_table_max*sizeof(const char*));
 	}
-	char * value = strncpy(malloc(strlen(string)),string,strlen(string)-1);
+	int length = strlen(string);
+	char * value = strncpy(malloc(length),string,length-1);
 	value[strlen(string)-1]=0;
 	kieker_lookup_string_list[kieker_lookup_table_top++]=value;
 }

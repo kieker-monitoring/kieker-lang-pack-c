@@ -84,10 +84,37 @@ int kieker_serialize_int32 (char *buffer, const int offset, const long int value
  * returns size of written structure
  */
 int kieker_serialize_int64 (char *buffer, const int offset, const long long value) {
-	// TODO this is not cross-platform bswap_64 might not be available
 	long long nvalue = bswap_64(value);
 	memcpy(buffer+offset,&nvalue,8);
+
 	return 8;
+}
+
+/*
+ * buffer = the buffer to send the data
+ * offset = store data to buffer at offset
+ * value = the value to be stored
+ *
+ * returns size of written structure
+ */
+int kieker_serialize_float (char *buffer, const int offset, const float value) {
+	memcpy(buffer+offset, &value, sizeof(float));
+
+	return sizeof(float);
+}
+
+/*
+ * buffer = the buffer to send the data
+ * offset = store data to buffer at offset
+ * value = the value to be stored
+ *
+ * returns size of written structure
+ */
+int kieker_serialize_double (char *buffer, const int offset, const double value) {
+	long long nvalue = bswap_64(value);
+	memcpy(buffer+offset, &nvalue, sizeof(double));
+
+	return sizeof(double);
 }
 
 /*
@@ -99,8 +126,7 @@ int kieker_serialize_int64 (char *buffer, const int offset, const long long valu
  */
 int kieker_serialize_string (char *buffer, int offset, const char *string) {
 	long int nvalue = htonl(kieker_lookup_find_key_by_string(string));
-	memcpy(buffer+offset,&nvalue,4);
-	return 4;
-
+	memcpy(buffer+offset, &nvalue, 4);
+	
 	return 4;
 }

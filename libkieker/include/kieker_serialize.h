@@ -53,6 +53,25 @@ int kieker_serialize_int32 (char *buffer, const int offset, const long int value
  * returns size of written structure
  */
 int kieker_serialize_int64 (char *buffer, const int offset, const long long value);
+
+/*
+ * buffer = the buffer to send the data
+ * offset = store data to buffer at offset
+ * value = the value to be stored
+ *
+ * returns size of written structure
+ */
+int kieker_serialize_float (char *buffer, const int offset, const float value);
+
+/*
+ * buffer = the buffer to send the data
+ * offset = store data to buffer at offset
+ * value = the value to be stored
+ *
+ * returns size of written structure
+ */
+int kieker_serialize_double (char *buffer, const int offset, const double value);
+
 /*
  * buffer = the buffer to send the data
  * offset = store string data to buffer at offset

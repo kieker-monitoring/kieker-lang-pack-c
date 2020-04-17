@@ -1,1 +1,3 @@
-SUBDIRS=libkiekermon include exampleProgram
+SUBDIRS=libkieker examples
+ACLOCAL_AMFLAGS=-I m4
+
