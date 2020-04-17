@@ -54,4 +54,4 @@ makefile.in
 **/.deps/**
 **/*.la
 **/*.lo
-
+**/*.o
