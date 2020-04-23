@@ -1,5 +1,8 @@
 # README
 
+Please note: THis language pack is in an early stage of development. It is based on a master thesis and reuses code from there.
+However, it also needs to conform to the current protocol version of binary Kieker data transfer. There are some issues with it.
+
 ## Before Compiling
 
 After checkout, you may have to perform the following four operations before you can compile the library and the sample programs.
