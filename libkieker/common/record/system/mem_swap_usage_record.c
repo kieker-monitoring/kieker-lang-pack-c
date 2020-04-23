@@ -32,16 +32,16 @@
  * returns size of written structure
  */
 int kieker_common_record_system_mem_swap_usage_record_serialize(char *buffer, const int id, const int offset, const kieker_common_record_system_mem_swap_usage_record value) {
-	int length = 0;
+	int position = offset;
 
-	length += kieker_serialize_int64(buffer, offset, value.timestamp);
-	length += kieker_serialize_string(buffer, offset, value.hostname);
-	length += kieker_serialize_int64(buffer, offset, value.memTotal);
-	length += kieker_serialize_int64(buffer, offset, value.memUsed);
-	length += kieker_serialize_int64(buffer, offset, value.memFree);
-	length += kieker_serialize_int64(buffer, offset, value.swapTotal);
-	length += kieker_serialize_int64(buffer, offset, value.swapUsed);
-	length += kieker_serialize_int64(buffer, offset, value.swapFree);
+	position += kieker_serialize_int64(buffer, position, value.timestamp);
+	position += kieker_serialize_string(buffer, position, value.hostname);
+	position += kieker_serialize_int64(buffer, position, value.memTotal);
+	position += kieker_serialize_int64(buffer, position, value.memUsed);
+	position += kieker_serialize_int64(buffer, position, value.memFree);
+	position += kieker_serialize_int64(buffer, position, value.swapTotal);
+	position += kieker_serialize_int64(buffer, position, value.swapUsed);
+	position += kieker_serialize_int64(buffer, position, value.swapFree);
 
-	return length;
+	return position;
 }

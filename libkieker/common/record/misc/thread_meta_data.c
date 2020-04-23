@@ -32,10 +32,10 @@
  * returns size of written structure
  */
 int kieker_common_record_misc_thread_meta_data_serialize(char *buffer, const int id, const int offset, const kieker_common_record_misc_thread_meta_data value) {
-	int length = 0;
+	int position = offset;
 
-	length += kieker_serialize_string(buffer, offset, value.hostname);
-	length += kieker_serialize_int64(buffer, offset, value.threadId);
+	position += kieker_serialize_string(buffer, position, value.hostname);
+	position += kieker_serialize_int64(buffer, position, value.threadId);
 
-	return length;
+	return position;
 }

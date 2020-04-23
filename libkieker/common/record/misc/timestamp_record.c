@@ -32,9 +32,9 @@
  * returns size of written structure
  */
 int kieker_common_record_misc_timestamp_record_serialize(char *buffer, const int id, const int offset, const kieker_common_record_misc_timestamp_record value) {
-	int length = 0;
+	int position = offset;
 
-	length += kieker_serialize_int64(buffer, offset, value.timestamp);
+	position += kieker_serialize_int64(buffer, position, value.timestamp);
 
-	return length;
+	return position;
 }

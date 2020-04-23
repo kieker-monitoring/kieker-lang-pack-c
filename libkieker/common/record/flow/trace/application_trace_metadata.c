@@ -32,16 +32,16 @@
  * returns size of written structure
  */
 int kieker_common_record_flow_trace_application_trace_metadata_serialize(char *buffer, const int id, const int offset, const kieker_common_record_flow_trace_application_trace_metadata value) {
-	int length = 0;
+	int position = offset;
 
-	length += kieker_serialize_int64(buffer, offset, value.traceId);
-	length += kieker_serialize_int64(buffer, offset, value.threadId);
-	length += kieker_serialize_string(buffer, offset, value.sessionId);
-	length += kieker_serialize_string(buffer, offset, value.hostname);
-	length += kieker_serialize_int64(buffer, offset, value.parentTraceId);
-	length += kieker_serialize_int32(buffer, offset, value.parentOrderId);
-	length += kieker_serialize_int32(buffer, offset, value.nextOrderId);
-	length += kieker_serialize_string(buffer, offset, value.applicationName);
+	position += kieker_serialize_int64(buffer, position, value.traceId);
+	position += kieker_serialize_int64(buffer, position, value.threadId);
+	position += kieker_serialize_string(buffer, position, value.sessionId);
+	position += kieker_serialize_string(buffer, position, value.hostname);
+	position += kieker_serialize_int64(buffer, position, value.parentTraceId);
+	position += kieker_serialize_int32(buffer, position, value.parentOrderId);
+	position += kieker_serialize_int32(buffer, position, value.nextOrderId);
+	position += kieker_serialize_string(buffer, position, value.applicationName);
 
-	return length;
+	return position;
 }

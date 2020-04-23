@@ -32,18 +32,18 @@
  * returns size of written structure
  */
 int kieker_common_record_system_c_p_u_utilization_record_serialize(char *buffer, const int id, const int offset, const kieker_common_record_system_c_p_u_utilization_record value) {
-	int length = 0;
+	int position = offset;
 
-	length += kieker_serialize_int64(buffer, offset, value.timestamp);
-	length += kieker_serialize_string(buffer, offset, value.hostname);
-	length += kieker_serialize_string(buffer, offset, value.cpuID);
-	length += kieker_serialize_double(buffer, offset, value.user);
-	length += kieker_serialize_double(buffer, offset, value.system);
-	length += kieker_serialize_double(buffer, offset, value.wait);
-	length += kieker_serialize_double(buffer, offset, value.nice);
-	length += kieker_serialize_double(buffer, offset, value.irq);
-	length += kieker_serialize_double(buffer, offset, value.totalUtilization);
-	length += kieker_serialize_double(buffer, offset, value.idle);
+	position += kieker_serialize_int64(buffer, position, value.timestamp);
+	position += kieker_serialize_string(buffer, position, value.hostname);
+	position += kieker_serialize_string(buffer, position, value.cpuID);
+	position += kieker_serialize_double(buffer, position, value.user);
+	position += kieker_serialize_double(buffer, position, value.system);
+	position += kieker_serialize_double(buffer, position, value.wait);
+	position += kieker_serialize_double(buffer, position, value.nice);
+	position += kieker_serialize_double(buffer, position, value.irq);
+	position += kieker_serialize_double(buffer, position, value.totalUtilization);
+	position += kieker_serialize_double(buffer, position, value.idle);
 
-	return length;
+	return position;
 }

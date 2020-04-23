@@ -32,16 +32,16 @@
  * returns size of written structure
  */
 int kieker_common_record_misc_kieker_metadata_record_serialize(char *buffer, const int id, const int offset, const kieker_common_record_misc_kieker_metadata_record value) {
-	int length = 0;
+	int position = offset;
 
-	length += kieker_serialize_string(buffer, offset, value.version);
-	length += kieker_serialize_string(buffer, offset, value.controllerName);
-	length += kieker_serialize_string(buffer, offset, value.hostname);
-	length += kieker_serialize_int32(buffer, offset, value.experimentId);
-	length += kieker_serialize_boolean(buffer, offset, value.debugMode);
-	length += kieker_serialize_int64(buffer, offset, value.timeOffset);
-	length += kieker_serialize_string(buffer, offset, value.timeUnit);
-	length += kieker_serialize_int64(buffer, offset, value.numberOfRecords);
+	position += kieker_serialize_string(buffer, position, value.version);
+	position += kieker_serialize_string(buffer, position, value.controllerName);
+	position += kieker_serialize_string(buffer, position, value.hostname);
+	position += kieker_serialize_int32(buffer, position, value.experimentId);
+	position += kieker_serialize_boolean(buffer, position, value.debugMode);
+	position += kieker_serialize_int64(buffer, position, value.timeOffset);
+	position += kieker_serialize_string(buffer, position, value.timeUnit);
+	position += kieker_serialize_int64(buffer, position, value.numberOfRecords);
 
-	return length;
+	return position;
 }

@@ -32,16 +32,16 @@
  * returns size of written structure
  */
 int kieker_common_record_controlflow_operation_execution_record_serialize(char *buffer, const int id, const int offset, const kieker_common_record_controlflow_operation_execution_record value) {
-	int length = 0;
+	int position = offset;
 
-	length += kieker_serialize_string(buffer, offset, value.operationSignature);
-	length += kieker_serialize_string(buffer, offset, value.sessionId);
-	length += kieker_serialize_int64(buffer, offset, value.traceId);
-	length += kieker_serialize_int64(buffer, offset, value.tin);
-	length += kieker_serialize_int64(buffer, offset, value.tout);
-	length += kieker_serialize_string(buffer, offset, value.hostname);
-	length += kieker_serialize_int32(buffer, offset, value.eoi);
-	length += kieker_serialize_int32(buffer, offset, value.ess);
+	position += kieker_serialize_string(buffer, position, value.operationSignature);
+	position += kieker_serialize_string(buffer, position, value.sessionId);
+	position += kieker_serialize_int64(buffer, position, value.traceId);
+	position += kieker_serialize_int64(buffer, position, value.tin);
+	position += kieker_serialize_int64(buffer, position, value.tout);
+	position += kieker_serialize_string(buffer, position, value.hostname);
+	position += kieker_serialize_int32(buffer, position, value.eoi);
+	position += kieker_serialize_int32(buffer, position, value.ess);
 
-	return length;
+	return position;
 }

@@ -32,14 +32,14 @@
  * returns size of written structure
  */
 int kieker_common_record_flow_trace_operation_constructor_object_before_constructor_object_event_serialize(char *buffer, const int id, const int offset, const kieker_common_record_flow_trace_operation_constructor_object_before_constructor_object_event value) {
-	int length = 0;
+	int position = offset;
 
-	length += kieker_serialize_int64(buffer, offset, value.timestamp);
-	length += kieker_serialize_int64(buffer, offset, value.traceId);
-	length += kieker_serialize_int32(buffer, offset, value.orderIndex);
-	length += kieker_serialize_string(buffer, offset, value.operationSignature);
-	length += kieker_serialize_string(buffer, offset, value.classSignature);
-	length += kieker_serialize_int32(buffer, offset, value.objectId);
+	position += kieker_serialize_int64(buffer, position, value.timestamp);
+	position += kieker_serialize_int64(buffer, position, value.traceId);
+	position += kieker_serialize_int32(buffer, position, value.orderIndex);
+	position += kieker_serialize_string(buffer, position, value.operationSignature);
+	position += kieker_serialize_string(buffer, position, value.classSignature);
+	position += kieker_serialize_int32(buffer, position, value.objectId);
 
-	return length;
+	return position;
 }

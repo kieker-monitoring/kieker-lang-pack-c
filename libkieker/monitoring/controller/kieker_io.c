@@ -18,31 +18,30 @@
  *
  * return socket handle id or -1 on error.
  */
-unsigned short kieker_io_server_socket_open (unsigned short port)
-{
-  struct sockaddr_in name;      /* an internet endpoint address */
-  int s;			/* socket descriptor */
+unsigned short kieker_io_server_socket_open(unsigned short port) {
+	struct sockaddr_in name; /* an internet endpoint address */
+	int s; /* socket descriptor */
 
-  /* allocate a socket */
-  if ( (s = socket(PF_INET, SOCK_STREAM, 0))<0)
-    return -1;
+	/* allocate a socket */
+	if ((s = socket(PF_INET, SOCK_STREAM, 0)) < 0)
+		return -1;
 
-  /* bind */
-  name.sin_family = AF_INET;
-  if (port==0)
-    name.sin_addr.s_addr=htonl(INADDR_NONE);
-  else {
-    name.sin_port=htons(port);
-    name.sin_addr.s_addr=htonl(INADDR_ANY);
-  }
-  if (bind(s,(struct sockaddr *)&name,sizeof(name))<0)
-    return -1;
+	/* bind */
+	name.sin_family = AF_INET;
+	if (port == 0)
+		name.sin_addr.s_addr = htonl(INADDR_NONE);
+	else {
+		name.sin_port = htons(port);
+		name.sin_addr.s_addr = htonl(INADDR_ANY);
+	}
+	if (bind(s, (struct sockaddr*) &name, sizeof(name)) < 0)
+		return -1;
 
-  /* use listen to queue requests */
-  if (listen(s,1)==-1)
-    return -1;
+	/* use listen to queue requests */
+	if (listen(s, 1) == -1)
+		return -1;
 
-  return s;
+	return s;
 }
 
 /*
@@ -54,37 +53,36 @@ unsigned short kieker_io_server_socket_open (unsigned short port)
  * returns the socket for the connection or
  *         -1 or h_errno negative numbers on error
  */
-int kieker_io_client_socket_open (const char* host, unsigned short port)
-{
-  struct hostent *hostinfo;     /* pointer to name resolution table entry */
-  struct sockaddr_in name;      /* an internet endpoint address           */
-  int s;			/* socket descriptor(similar to file desc)*/
-  int i;
+int kieker_io_client_socket_open(const char *host, unsigned short port) {
+	struct hostent *hostinfo; /* pointer to name resolution table entry */
+	struct sockaddr_in name; /* an internet endpoint address           */
+	int s; /* socket descriptor(similar to file desc)*/
+	int i;
 
-  /* allocate a socket */
-  if ((s = socket(PF_INET, SOCK_STREAM, 0)) < 0)
-    return -1;
+	/* allocate a socket */
+	if ((s = socket(PF_INET, SOCK_STREAM, 0)) < 0)
+		return -1;
 
-  name.sin_family = AF_INET;
-  name.sin_port=htons(port);
+	name.sin_family = AF_INET;
+	name.sin_port = htons(port);
 
-  /* map host name to IP address */
-  if ((hostinfo=gethostbyname(host))==NULL) {
-	  fprintf (stderr,"Host '%s' could not be found\n",host);
-    return h_errno;
-  }
+	/* map host name to IP address */
+	if ((hostinfo = gethostbyname(host)) == NULL) {
+		fprintf(stderr, "Host '%s' could not be found\n", host);
+		return h_errno;
+	}
 
-  name.sin_addr=*(struct in_addr *)hostinfo->h_addr_list[0];
+	name.sin_addr = *(struct in_addr*) hostinfo->h_addr_list[0];
 
-  /* connect the socket */
-  if ( connect(s,(struct sockaddr *)&name,sizeof(struct sockaddr_in)) < 0) {
-    i=-1;
-    fprintf (stderr,"[%d] %s\n",i,strerror(i));
-    return -1;
-  }
+	/* connect the socket */
+	if (connect(s, (struct sockaddr*) &name, sizeof(struct sockaddr_in)) < 0) {
+		i = errno;
+		fprintf(stderr, "[%d] %s\n", i, strerror(i));
+		return -1;
+	}
 
-  /* everything is ok. return socket */
-  return s;
+	/* everything is ok. return socket */
+	return s;
 }
 
 /*
@@ -94,14 +92,13 @@ int kieker_io_client_socket_open (const char* host, unsigned short port)
  *
  * returns the result of close (man 2 close)
  */
-int kieker_io_socket_close (unsigned short socket)
-{
-  struct linger ling;
+int kieker_io_socket_close(unsigned short socket) {
+	struct linger ling;
 
-  ling.l_onoff=1;  /* close will wait until all data is
-		      transmitted or the timeout period has expired */
-  ling.l_linger=0; /* sets that timeout to 0 seconed */
-  setsockopt(socket,SOL_SOCKET,SO_LINGER,&ling,sizeof(ling));
-  return close(socket);
+	ling.l_onoff = 1; /* close will wait until all data is
+	 transmitted or the timeout period has expired */
+	ling.l_linger = 0; /* sets that timeout to 0 seconed */
+	setsockopt(socket, SOL_SOCKET, SO_LINGER, &ling, sizeof(ling));
+	return close(socket);
 }
 

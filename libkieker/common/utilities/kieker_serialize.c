@@ -18,9 +18,13 @@
  * limitations under the License.
  ***************************************************************************/
 #include "kieker_serialize.h"
+
 #include <string.h>
 #include <byteswap.h>
 #include <stdlib.h>
+#include <arpa/inet.h>
+
+#include <kieker_lookup.h>
 
 /*
  * Serialize a boolean value coded in a char. true = 1 and false = 0
@@ -127,6 +131,6 @@ int kieker_serialize_double (char *buffer, const int offset, const double value)
 int kieker_serialize_string (char *buffer, int offset, const char *string) {
 	long int nvalue = htonl(kieker_lookup_find_key_by_string(string));
 	memcpy(buffer+offset, &nvalue, 4);
-	
+
 	return 4;
 }

@@ -8,6 +8,8 @@
 #include "kieker_probe_gcc_profiling.h"
 
 #include <stdio.h>
+#include <time.h>
+
 #include <kieker_controller.h>
 
 void __cyg_profile_func_enter (void *this_fn, void *call_site) {

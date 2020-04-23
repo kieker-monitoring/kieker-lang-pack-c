@@ -32,12 +32,12 @@
  * returns size of written structure
  */
 int kieker_common_record_misc_host_application_meta_data_serialize(char *buffer, const int id, const int offset, const kieker_common_record_misc_host_application_meta_data value) {
-	int length = 0;
+	int position = offset;
 
-	length += kieker_serialize_string(buffer, offset, value.systemName);
-	length += kieker_serialize_string(buffer, offset, value.ipAddress);
-	length += kieker_serialize_string(buffer, offset, value.hostname);
-	length += kieker_serialize_string(buffer, offset, value.applicationName);
+	position += kieker_serialize_string(buffer, position, value.systemName);
+	position += kieker_serialize_string(buffer, position, value.ipAddress);
+	position += kieker_serialize_string(buffer, position, value.hostname);
+	position += kieker_serialize_string(buffer, position, value.applicationName);
 
-	return length;
+	return position;
 }

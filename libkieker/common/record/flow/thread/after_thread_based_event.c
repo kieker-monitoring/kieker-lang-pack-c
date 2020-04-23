@@ -32,13 +32,13 @@
  * returns size of written structure
  */
 int kieker_common_record_flow_thread_after_thread_based_event_serialize(char *buffer, const int id, const int offset, const kieker_common_record_flow_thread_after_thread_based_event value) {
-	int length = 0;
+	int position = offset;
 
-	length += kieker_serialize_int64(buffer, offset, value.timestamp);
-	length += kieker_serialize_int64(buffer, offset, value.threadId);
-	length += kieker_serialize_int32(buffer, offset, value.orderIndex);
-	length += kieker_serialize_string(buffer, offset, value.operationSignature);
-	length += kieker_serialize_string(buffer, offset, value.classSignature);
+	position += kieker_serialize_int64(buffer, position, value.timestamp);
+	position += kieker_serialize_int64(buffer, position, value.threadId);
+	position += kieker_serialize_int32(buffer, position, value.orderIndex);
+	position += kieker_serialize_string(buffer, position, value.operationSignature);
+	position += kieker_serialize_string(buffer, position, value.classSignature);
 
-	return length;
+	return position;
 }

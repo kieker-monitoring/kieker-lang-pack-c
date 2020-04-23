@@ -32,20 +32,20 @@
  * returns size of written structure
  */
 int kieker_common_record_jvm_memory_record_serialize(char *buffer, const int id, const int offset, const kieker_common_record_jvm_memory_record value) {
-	int length = 0;
+	int position = offset;
 
-	length += kieker_serialize_int64(buffer, offset, value.timestamp);
-	length += kieker_serialize_string(buffer, offset, value.hostname);
-	length += kieker_serialize_string(buffer, offset, value.vmName);
-	length += kieker_serialize_int64(buffer, offset, value.heapMaxBytes);
-	length += kieker_serialize_int64(buffer, offset, value.heapUsedBytes);
-	length += kieker_serialize_int64(buffer, offset, value.heapCommittedBytes);
-	length += kieker_serialize_int64(buffer, offset, value.heapInitBytes);
-	length += kieker_serialize_int64(buffer, offset, value.nonHeapMaxBytes);
-	length += kieker_serialize_int64(buffer, offset, value.nonHeapUsedBytes);
-	length += kieker_serialize_int64(buffer, offset, value.nonHeapCommittedBytes);
-	length += kieker_serialize_int64(buffer, offset, value.nonHeapInitBytes);
-	length += kieker_serialize_int32(buffer, offset, value.objectPendingFinalizationCount);
+	position += kieker_serialize_int64(buffer, position, value.timestamp);
+	position += kieker_serialize_string(buffer, position, value.hostname);
+	position += kieker_serialize_string(buffer, position, value.vmName);
+	position += kieker_serialize_int64(buffer, position, value.heapMaxBytes);
+	position += kieker_serialize_int64(buffer, position, value.heapUsedBytes);
+	position += kieker_serialize_int64(buffer, position, value.heapCommittedBytes);
+	position += kieker_serialize_int64(buffer, position, value.heapInitBytes);
+	position += kieker_serialize_int64(buffer, position, value.nonHeapMaxBytes);
+	position += kieker_serialize_int64(buffer, position, value.nonHeapUsedBytes);
+	position += kieker_serialize_int64(buffer, position, value.nonHeapCommittedBytes);
+	position += kieker_serialize_int64(buffer, position, value.nonHeapInitBytes);
+	position += kieker_serialize_int32(buffer, position, value.objectPendingFinalizationCount);
 
-	return length;
+	return position;
 }

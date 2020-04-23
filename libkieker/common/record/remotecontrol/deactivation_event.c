@@ -32,9 +32,9 @@
  * returns size of written structure
  */
 int kieker_common_record_remotecontrol_deactivation_event_serialize(char *buffer, const int id, const int offset, const kieker_common_record_remotecontrol_deactivation_event value) {
-	int length = 0;
+	int position = offset;
 
-	length += kieker_serialize_string(buffer, offset, value.pattern);
+	position += kieker_serialize_string(buffer, position, value.pattern);
 
-	return length;
+	return position;
 }

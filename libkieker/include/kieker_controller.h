@@ -9,11 +9,7 @@
 #define LIBKIEKER_MONITORING_CONTROLLER_KIEKER_CONTROLLER_H_
 
 #include <sys/types.h>
-
-/*
- * Global buffer for kieker IO.
- */
-char* kieker_controller_buffer = NULL;
+#include <stdlib.h>
 
 typedef struct __kieker_thread_array_entry {
 	pid_t thread_id;
@@ -34,6 +30,16 @@ long long kieker_controller_get_time_ms();
 kieker_thread_array_entry* kieker_controller_get_thread_entry();
 
 /*
+ * Return the hostname.
+ */
+const char* kieker_controller_get_hostname();
+
+/*
+ * Return the buffer.
+ */
+char* kieker_controller_get_buffer();
+
+/*
  * Return the currently active trace id, if no trace exists it creates an entry.
  * On error -1 is returned.
  *
@@ -46,12 +52,12 @@ long long kieker_controller_get_trace_id(kieker_thread_array_entry* entry);
  *
  * Return the complete string or "<lookup failed %p>"
  */
-char* kieker_controller_get_operation_fqn(void *function_ptr);
+const char* kieker_controller_get_operation_fqn(void *function_ptr);
 
 /**
  * Append a string to the send buffer.
  */
-void kieker_controller_send_string(const char* string);
+void kieker_controller_send_string(const char* string, int id);
 
 /**
  * Send all data in the buffer to the stream.

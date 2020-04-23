@@ -32,11 +32,11 @@
  * returns size of written structure
  */
 int kieker_common_record_controlflow_branching_record_serialize(char *buffer, const int id, const int offset, const kieker_common_record_controlflow_branching_record value) {
-	int length = 0;
+	int position = offset;
 
-	length += kieker_serialize_int64(buffer, offset, value.timestamp);
-	length += kieker_serialize_int32(buffer, offset, value.branchID);
-	length += kieker_serialize_int32(buffer, offset, value.branchingOutcome);
+	position += kieker_serialize_int64(buffer, position, value.timestamp);
+	position += kieker_serialize_int32(buffer, position, value.branchID);
+	position += kieker_serialize_int32(buffer, position, value.branchingOutcome);
 
-	return length;
+	return position;
 }

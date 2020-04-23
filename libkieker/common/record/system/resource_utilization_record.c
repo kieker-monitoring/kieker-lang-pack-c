@@ -32,12 +32,12 @@
  * returns size of written structure
  */
 int kieker_common_record_system_resource_utilization_record_serialize(char *buffer, const int id, const int offset, const kieker_common_record_system_resource_utilization_record value) {
-	int length = 0;
+	int position = offset;
 
-	length += kieker_serialize_int64(buffer, offset, value.timestamp);
-	length += kieker_serialize_string(buffer, offset, value.hostname);
-	length += kieker_serialize_string(buffer, offset, value.resourceName);
-	length += kieker_serialize_double(buffer, offset, value.utilization);
+	position += kieker_serialize_int64(buffer, position, value.timestamp);
+	position += kieker_serialize_string(buffer, position, value.hostname);
+	position += kieker_serialize_string(buffer, position, value.resourceName);
+	position += kieker_serialize_double(buffer, position, value.utilization);
 
-	return length;
+	return position;
 }

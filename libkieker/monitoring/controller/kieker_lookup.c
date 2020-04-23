@@ -1,5 +1,7 @@
 #include "kieker_lookup.h"
 
+#include "kieker_controller.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,11 +42,12 @@ int kieker_lookup_create(const char *filename) {
 long int kieker_lookup_find_key_by_string(const char* string) {
 	int i;
 	for (i=0;i<kieker_lookup_table_top;i++) {
-		if (strcmp(kieker_lookup_string_list[i],string)==0)
+		if (strcmp(kieker_lookup_string_list[i], string)==0)
 			return i;
 	}
 
 	kieker_lookup_string_list_add_value(string);
+
 	return kieker_lookup_table_top;
 }
 
@@ -57,8 +60,8 @@ void kieker_lookup_string_list_add_value(const char* string) {
 		kieker_lookup_string_list = realloc (kieker_lookup_string_list, kieker_lookup_table_max*sizeof(const char*));
 	}
 	int length = strlen(string);
-	char * value = strncpy(malloc(length),string,length-1);
-	value[strlen(string)-1]=0;
+	char * value = strcpy(malloc(length+1), string);
+	value[strlen(string)]=0;
 
 	kieker_controller_send_string(value, kieker_lookup_table_top);
 

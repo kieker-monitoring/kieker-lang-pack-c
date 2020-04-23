@@ -32,11 +32,11 @@
  * returns size of written structure
  */
 int kieker_common_record_flow_trace_concurrency_split_event_serialize(char *buffer, const int id, const int offset, const kieker_common_record_flow_trace_concurrency_split_event value) {
-	int length = 0;
+	int position = offset;
 
-	length += kieker_serialize_int64(buffer, offset, value.timestamp);
-	length += kieker_serialize_int64(buffer, offset, value.traceId);
-	length += kieker_serialize_int32(buffer, offset, value.orderIndex);
+	position += kieker_serialize_int64(buffer, position, value.timestamp);
+	position += kieker_serialize_int64(buffer, position, value.traceId);
+	position += kieker_serialize_int32(buffer, position, value.orderIndex);
 
-	return length;
+	return position;
 }

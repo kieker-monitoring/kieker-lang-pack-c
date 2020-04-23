@@ -11,14 +11,32 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <errno.h>
+#include <string.h>
+
+enum kieker_init_states {
+	UNCONFIGURED = 0, CONFIGURED = 1, FAILED = -1
+};
 
 long kieker_thread_array_size = 0;
-kieker_thread_array_entry* kieker_thread_array = NULL;
+kieker_thread_array_entry *kieker_thread_array = NULL;
+
 int kieker_socket = 0;
 int kieker_offset = 0;
 
-char* kieker_controller_string_buffer;
+int kieker_error = 0;
+enum kieker_init_states kieker_init_state = UNCONFIGURED;
+
+char *kieker_controller_string_buffer;
+char *kieker_hostname;
+
+/*
+ * Global buffer for kieker IO.
+ */
+char *kieker_controller_buffer = NULL;
 
 /*
  * Return the current time since epoch in milliseconds.
@@ -37,16 +55,18 @@ kieker_thread_array_entry* kieker_controller_create_thread_entry() {
 	if (kieker_thread_array_size == 0) {
 		kieker_thread_array = malloc(sizeof(kieker_thread_array_entry));
 	} else {
-		kieker_thread_array = realloc(kieker_thread_array, sizeof(kieker_thread_array_entry)*(kieker_thread_array_size+1));
+		kieker_thread_array = realloc(kieker_thread_array,
+				sizeof(kieker_thread_array_entry)
+						* (kieker_thread_array_size + 1));
 	}
 
 	kieker_thread_array[kieker_thread_array_size].process_id = getpid();
-	kieker_thread_array[kieker_thread_array_size].thread_id = gettid();
+	kieker_thread_array[kieker_thread_array_size].thread_id = getpid(); // TODO gettid seems not to be available and is also not POSIX conform
 	kieker_thread_array[kieker_thread_array_size].trace_id = 0;
 
 	kieker_thread_array_size++;
 
-	return &kieker_thread_array[kieker_thread_array_size-1];
+	return &kieker_thread_array[kieker_thread_array_size - 1];
 }
 
 /*
@@ -54,20 +74,45 @@ kieker_thread_array_entry* kieker_controller_create_thread_entry() {
  */
 void kieker_controller_initialize() {
 	// TODO this must be read from configuration
-	char* host = "localhost";
+	char *host = "localhost";
 	unsigned short port = 5678;
 	kieker_offset = 0;
-	kieker_controller_buffer = malloc(8192*sizeof(char));
-	kieker_controller_string_buffer = malloc(8192*sizeof(char));
+	kieker_controller_buffer = malloc(8192 * sizeof(char));
+	kieker_controller_string_buffer = malloc(8192 * sizeof(char));
 
-	kieker_socket = kieker_io_client_socket_open (host, port);
-	// TODO this must loop over a record registration file
-	kieker_offset += kieker_serialize_string(kieker_controller_buffer, kieker_offset, "kieker.common.record.flow.trace.TraceMetadata");
-	kieker_offset += kieker_serialize_string(kieker_controller_buffer, kieker_offset, "kieker.common.record.flow.trace.operation.BeforeOperationEvent");
-	kieker_offset += kieker_serialize_string(kieker_controller_buffer, kieker_offset, "kieker.common.record.flow.trace.operation.AfterOperationEvent");
+	if ((kieker_socket = kieker_io_client_socket_open(host, port)) != -1) {
+		// TODO this must loop over a record registration file
+		kieker_offset += kieker_serialize_string(kieker_controller_buffer,
+				kieker_offset, "kieker.common.record.flow.trace.TraceMetadata");
+		kieker_offset +=
+				kieker_serialize_string(kieker_controller_buffer, kieker_offset,
+						"kieker.common.record.flow.trace.operation.BeforeOperationEvent");
+		kieker_offset +=
+				kieker_serialize_string(kieker_controller_buffer, kieker_offset,
+						"kieker.common.record.flow.trace.operation.AfterOperationEvent");
 
-	write(kieker_socket, kieker_controller_buffer, kieker_offset);
-	kieker_offset = 0;
+		if (write(kieker_socket, kieker_controller_buffer, kieker_offset)
+				== -1) {
+			kieker_error = errno;
+			fprintf(stderr, "Write failure on initialization: %s\n",
+					strerror(kieker_error));
+			kieker_init_state = FAILED;
+		}
+		fsync(kieker_socket);
+
+		kieker_offset = 0;
+
+		kieker_hostname = malloc(200);
+		if (gethostname(kieker_hostname, 199) == -1) {
+			kieker_error = errno;
+			fprintf(stderr, "Failure looking up hostname: %s\n",
+					strerror(kieker_error));
+			kieker_hostname = "<failed>";
+		}
+	} else {
+		fprintf(stderr, "Cannot setup connection.\n");
+		kieker_init_state = FAILED;
+	}
 }
 
 // TODO register shutdown hook
@@ -75,13 +120,19 @@ void kieker_controller_initialize() {
 /**
  * Append a string to the send buffer.
  */
-void kieker_controller_send_string(const char* string, int id) {
+void kieker_controller_send_string(const char *string, int id) {
 	int length = strlen(string);
 	kieker_serialize_int32(kieker_controller_string_buffer, 0, id);
 	kieker_serialize_int32(kieker_controller_string_buffer, 4, length);
-	strcpy(kieker_controller_string_buffer+4+4, string);
+	strncpy(kieker_controller_string_buffer + 4 + 4, string, length);
 
-	write(kieker_socket, kieker_controller_string_buffer, length);
+	if (write(kieker_socket, kieker_controller_string_buffer, length+4+4) == -1) {
+		kieker_error = errno;
+		fprintf(stderr, "Write failure sending initial strings: %s\n",
+				strerror(kieker_error));
+		kieker_init_state = FAILED;
+	}
+	fsync(kieker_socket);
 }
 
 /**
@@ -90,7 +141,11 @@ void kieker_controller_send_string(const char* string, int id) {
  * length = length of the data stored in the buffer
  */
 void kieker_controller_send(int length) {
-	write(kieker_socket, kieker_controller_buffer, length);
+	if (write(kieker_socket, kieker_controller_buffer, length) == -1) {
+		kieker_error = errno;
+		fprintf(stderr, "Write failure: %s\n", strerror(kieker_error));
+	}
+	fsync(kieker_socket);
 }
 
 /*
@@ -99,8 +154,8 @@ void kieker_controller_send(int length) {
  */
 kieker_thread_array_entry* kieker_controller_get_thread_entry() {
 	if (kieker_thread_array_size != 0) {
-		pid_t current_thread_id = gettid();
-		for (int i=0;i<kieker_thread_array_size;i++) {
+		pid_t current_thread_id = getpid(); // TODO gettid might not work we need a posix conform alternative
+		for (int i = 0; i < kieker_thread_array_size; i++) {
 			if (kieker_thread_array[i].thread_id == current_thread_id) {
 				return &kieker_thread_array[i];
 			}
@@ -114,12 +169,26 @@ kieker_thread_array_entry* kieker_controller_get_thread_entry() {
 }
 
 /*
+ * Return the buffer.
+ */
+char* kieker_controller_get_buffer() {
+	return kieker_controller_buffer;
+}
+
+/*
+ * Return the hostname.
+ */
+const char* kieker_controller_get_hostname() {
+	return kieker_hostname;
+}
+
+/*
  * Return the currently active trace id, if no trace exists it creates an entry.
  * On error -1 is returned.
  *
  * entry = pointer to a array entry
  */
-long long kieker_controller_get_trace_id(kieker_thread_array_entry* entry) {
+long long kieker_controller_get_trace_id(kieker_thread_array_entry *entry) {
 	if (entry != NULL) {
 		return ++entry->trace_id;
 	} else {
@@ -132,10 +201,10 @@ long long kieker_controller_get_trace_id(kieker_thread_array_entry* entry) {
  *
  * Return the complete string or "<lookup failed %p>"
  */
-char* kieker_controller_get_operation_fqn(void *function_ptr) {
-	char result[16+2+16+1];
+const char* kieker_controller_get_operation_fqn(void *function_ptr) {
+	char *result = malloc(16 + 2 + 16 + 1);
 
-	sprintf(result,"<lookup failed %p>");
+	sprintf(result, "<lookup failed %p>", function_ptr);
 
 	return result;
 }

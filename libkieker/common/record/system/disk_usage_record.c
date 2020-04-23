@@ -32,17 +32,17 @@
  * returns size of written structure
  */
 int kieker_common_record_system_disk_usage_record_serialize(char *buffer, const int id, const int offset, const kieker_common_record_system_disk_usage_record value) {
-	int length = 0;
+	int position = offset;
 
-	length += kieker_serialize_int64(buffer, offset, value.timestamp);
-	length += kieker_serialize_string(buffer, offset, value.hostname);
-	length += kieker_serialize_string(buffer, offset, value.deviceName);
-	length += kieker_serialize_double(buffer, offset, value.queue);
-	length += kieker_serialize_double(buffer, offset, value.readBytesPerSecond);
-	length += kieker_serialize_double(buffer, offset, value.readsPerSecond);
-	length += kieker_serialize_double(buffer, offset, value.serviceTime);
-	length += kieker_serialize_double(buffer, offset, value.writeBytesPerSecond);
-	length += kieker_serialize_double(buffer, offset, value.writesPerSecond);
+	position += kieker_serialize_int64(buffer, position, value.timestamp);
+	position += kieker_serialize_string(buffer, position, value.hostname);
+	position += kieker_serialize_string(buffer, position, value.deviceName);
+	position += kieker_serialize_double(buffer, position, value.queue);
+	position += kieker_serialize_double(buffer, position, value.readBytesPerSecond);
+	position += kieker_serialize_double(buffer, position, value.readsPerSecond);
+	position += kieker_serialize_double(buffer, position, value.serviceTime);
+	position += kieker_serialize_double(buffer, position, value.writeBytesPerSecond);
+	position += kieker_serialize_double(buffer, position, value.writesPerSecond);
 
-	return length;
+	return position;
 }

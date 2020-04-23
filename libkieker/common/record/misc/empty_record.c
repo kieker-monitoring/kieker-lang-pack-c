@@ -32,8 +32,8 @@
  * returns size of written structure
  */
 int kieker_common_record_misc_empty_record_serialize(char *buffer, const int id, const int offset, const kieker_common_record_misc_empty_record value) {
-	int length = 0;
+	int position = offset;
 
 
-	return length;
+	return position;
 }
