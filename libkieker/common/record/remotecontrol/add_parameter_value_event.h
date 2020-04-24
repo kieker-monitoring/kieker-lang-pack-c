@@ -30,10 +30,9 @@ typedef struct {
  * Serialize an AddParameterValueEvent and return the size of the written structure.
  *
  * buffer = the buffer to send the data
- * id = id to identify the record type
  * offset = store data to buffer at offset
  * value = the value to be stored
  *
  * returns size of written structure
  */
-int kieker_common_record_remotecontrol_add_parameter_value_event_serialize(char *buffer, const int id, const int offset, const kieker_common_record_remotecontrol_add_parameter_value_event value);
+int kieker_common_record_remotecontrol_add_parameter_value_event_serialize(char *buffer, const int offset, const kieker_common_record_remotecontrol_add_parameter_value_event value);

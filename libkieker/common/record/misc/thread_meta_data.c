@@ -25,13 +25,12 @@
  * Serialize an ThreadMetaData and return the size of the written structure.
  *
  * buffer = the buffer to send the data
- * id = id to identify the record type
  * offset = store data to buffer at offset
  * value = the value to be stored
  *
  * returns size of written structure
  */
-int kieker_common_record_misc_thread_meta_data_serialize(char *buffer, const int id, const int offset, const kieker_common_record_misc_thread_meta_data value) {
+int kieker_common_record_misc_thread_meta_data_serialize(char *buffer, const int offset, const kieker_common_record_misc_thread_meta_data value) {
 	int position = offset;
 
 	position += kieker_serialize_string(buffer, position, value.hostname);

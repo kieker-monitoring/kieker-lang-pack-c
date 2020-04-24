@@ -11,9 +11,9 @@
 
 #include <stdio.h>
 
-#define KIEKER_FLOW_TRACE_METADATA 1
-#define KIEKER_FLOW_BEFORE_OPERATION 2
-#define KIEKER_FLOW_AFTER_OPERATION 3
+#define KIEKER_FLOW_TRACE_METADATA 0
+#define KIEKER_FLOW_BEFORE_OPERATION 1
+#define KIEKER_FLOW_AFTER_OPERATION 2
 
 void kieker_probe_before_operation_record(const char* class_signature, const char* operation_signature);
 

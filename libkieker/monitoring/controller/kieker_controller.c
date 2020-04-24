@@ -17,6 +17,8 @@
 #include <errno.h>
 #include <string.h>
 
+#define _DEBUG DEBUG
+
 enum kieker_init_states {
 	UNCONFIGURED = 0, CONFIGURED = 1, FAILED = -1
 };
@@ -32,6 +34,9 @@ enum kieker_init_states kieker_init_state = UNCONFIGURED;
 
 char *kieker_controller_string_buffer;
 char *kieker_hostname;
+
+// temporary test
+int kwrite(int fd, const void *buf, size_t count, const char* caller);
 
 /*
  * Global buffer for kieker IO.
@@ -91,15 +96,6 @@ void kieker_controller_initialize() {
 				kieker_serialize_string(kieker_controller_buffer, kieker_offset,
 						"kieker.common.record.flow.trace.operation.AfterOperationEvent");
 
-		if (write(kieker_socket, kieker_controller_buffer, kieker_offset)
-				== -1) {
-			kieker_error = errno;
-			fprintf(stderr, "Write failure on initialization: %s\n",
-					strerror(kieker_error));
-			kieker_init_state = FAILED;
-		}
-		fsync(kieker_socket);
-
 		kieker_offset = 0;
 
 		kieker_hostname = malloc(200);
@@ -122,11 +118,13 @@ void kieker_controller_initialize() {
  */
 void kieker_controller_send_string(const char *string, int id) {
 	int length = strlen(string);
-	kieker_serialize_int32(kieker_controller_string_buffer, 0, id);
-	kieker_serialize_int32(kieker_controller_string_buffer, 4, length);
-	strncpy(kieker_controller_string_buffer + 4 + 4, string, length);
+	kieker_serialize_int32(kieker_controller_string_buffer, 0, -1);
+	kieker_serialize_int32(kieker_controller_string_buffer, 4, id);
+	kieker_serialize_int32(kieker_controller_string_buffer, 8, length);
+	strncpy(kieker_controller_string_buffer + 4 + 4 + 4, string, length);
 
-	if (write(kieker_socket, kieker_controller_string_buffer, length+4+4) == -1) {
+	if (kwrite(kieker_socket, kieker_controller_string_buffer, length + 4 + 4 + 4, "send string")
+			== -1) {
 		kieker_error = errno;
 		fprintf(stderr, "Write failure sending initial strings: %s\n",
 				strerror(kieker_error));
@@ -141,7 +139,7 @@ void kieker_controller_send_string(const char *string, int id) {
  * length = length of the data stored in the buffer
  */
 void kieker_controller_send(int length) {
-	if (write(kieker_socket, kieker_controller_buffer, length) == -1) {
+	if (kwrite(kieker_socket, kieker_controller_buffer, length, "record send") == -1) {
 		kieker_error = errno;
 		fprintf(stderr, "Write failure: %s\n", strerror(kieker_error));
 	}
@@ -182,20 +180,6 @@ const char* kieker_controller_get_hostname() {
 	return kieker_hostname;
 }
 
-/*
- * Return the currently active trace id, if no trace exists it creates an entry.
- * On error -1 is returned.
- *
- * entry = pointer to a array entry
- */
-long long kieker_controller_get_trace_id(kieker_thread_array_entry *entry) {
-	if (entry != NULL) {
-		return ++entry->trace_id;
-	} else {
-		return -1;
-	}
-}
-
 /**
  * Lookup the function name and parameters and produce a FQN string from it.
  *
@@ -208,3 +192,73 @@ const char* kieker_controller_get_operation_fqn(void *function_ptr) {
 
 	return result;
 }
+
+/**
+ * Write the id and logging timestamp to the buffer.
+ *
+ * id = id of the record type.
+ * offset = offset in the buffer
+ */
+int kieker_monitoring_controller_prefix_serialize(int id, int offset) {
+	fprintf(stderr,"ID %d\n", id);
+	int position = offset;
+
+	position += kieker_serialize_int32(kieker_controller_buffer, position, id);
+	position += kieker_serialize_int64(kieker_controller_buffer, position, kieker_controller_get_time_ms());
+
+	return position;
+}
+
+#define WIDTH 16
+#define REST (WIDTH - 1)
+
+int kwrite(int fd, const void *buf, size_t count, const char *caller) {
+#ifdef _DEBUG
+	fprintf(stderr, "Write: %s ------------------\n", caller);
+	int i;
+	const char* read_buf = (const char*) buf;
+	for (i = 0; i < count; i++) {
+		char ch = *read_buf;
+		read_buf++;
+		fprintf(stderr, "%02x ", (unsigned char)ch);
+		if (i % (WIDTH/2) == (WIDTH/2-1)) {
+			fprintf(stderr," ");
+		}
+		if (i % WIDTH == REST) {
+			int j;
+			const char *read_buf2 = read_buf - REST;
+			for (j = 0; j < WIDTH; j++) {
+				char ch2 = *read_buf2;
+				read_buf2++;
+				if (ch2 > 31) {
+					fprintf(stderr, "%c", ch2);
+				} else {
+					fprintf(stderr, ".");
+				}
+			}
+			fprintf(stderr, "\n");
+		}
+	}
+	if (i % WIDTH != 0) {
+		int j;
+		for (j = 0; j < WIDTH - i % WIDTH; j++) {
+			fprintf(stderr, "   ");
+		}
+		const char *read_buf2 = read_buf - i % WIDTH;
+		for (j = 0; j < i % WIDTH; j++) {
+			char ch2 = *read_buf2;
+			read_buf2++;
+			if (ch2 > 31) {
+				fprintf(stderr, "%c", ch2);
+			} else {
+				fprintf(stderr, ".");
+			}
+		}
+		fprintf(stderr, "\n");
+	}
+
+	fprintf(stderr, "\n-------------------------\n");
+#endif
+	return write(fd, buf, count);
+}
+

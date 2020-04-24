@@ -48,7 +48,7 @@ long int kieker_lookup_find_key_by_string(const char* string) {
 
 	kieker_lookup_string_list_add_value(string);
 
-	return kieker_lookup_table_top;
+	return kieker_lookup_table_top-1;
 }
 
 /**

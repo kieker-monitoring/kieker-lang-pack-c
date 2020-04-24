@@ -25,13 +25,12 @@
  * Serialize an ApplicationTraceMetadata and return the size of the written structure.
  *
  * buffer = the buffer to send the data
- * id = id to identify the record type
  * offset = store data to buffer at offset
  * value = the value to be stored
  *
  * returns size of written structure
  */
-int kieker_common_record_flow_trace_application_trace_metadata_serialize(char *buffer, const int id, const int offset, const kieker_common_record_flow_trace_application_trace_metadata value) {
+int kieker_common_record_flow_trace_application_trace_metadata_serialize(char *buffer, const int offset, const kieker_common_record_flow_trace_application_trace_metadata value) {
 	int position = offset;
 
 	position += kieker_serialize_int64(buffer, position, value.traceId);
@@ -40,7 +39,6 @@ int kieker_common_record_flow_trace_application_trace_metadata_serialize(char *b
 	position += kieker_serialize_string(buffer, position, value.hostname);
 	position += kieker_serialize_int64(buffer, position, value.parentTraceId);
 	position += kieker_serialize_int32(buffer, position, value.parentOrderId);
-	position += kieker_serialize_int32(buffer, position, value.nextOrderId);
 	position += kieker_serialize_string(buffer, position, value.applicationName);
 
 	return position;

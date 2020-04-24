@@ -39,14 +39,6 @@ const char* kieker_controller_get_hostname();
  */
 char* kieker_controller_get_buffer();
 
-/*
- * Return the currently active trace id, if no trace exists it creates an entry.
- * On error -1 is returned.
- *
- * entry = pointer to a array entry
- */
-long long kieker_controller_get_trace_id(kieker_thread_array_entry* entry);
-
 /**
  * Lookup the function name and parameters and produce a FQN string from it.
  *
@@ -65,5 +57,13 @@ void kieker_controller_send_string(const char* string, int id);
  * length = length of the data stored in the buffer
  */
 void kieker_controller_send(int length);
+
+/**
+ * Write the id and logging timestamp to the buffer.
+ *
+ * id = id of the record type.
+ * offset = offset in the buffer
+ */
+int kieker_monitoring_controller_prefix_serialize(int id, int offset);
 
 #endif /* LIBKIEKER_MONITORING_CONTROLLER_KIEKER_CONTROLLER_H_ */
