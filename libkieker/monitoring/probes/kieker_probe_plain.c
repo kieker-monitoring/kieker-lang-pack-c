@@ -64,6 +64,8 @@ void kieker_probe_after_operation_record(const char* class_signature, const char
 	event.operationSignature = operation_signature;
 	event.orderIndex = entry->order_index;
 
+	entry->order_index++;
+
 	int position = kieker_monitoring_controller_prefix_serialize(KIEKER_FLOW_AFTER_OPERATION, position);
 	position = kieker_common_record_flow_trace_operation_after_operation_event_serialize(kieker_controller_get_buffer(), position, event);
 

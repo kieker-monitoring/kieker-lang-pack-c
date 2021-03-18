@@ -17,7 +17,14 @@
 #include <errno.h>
 #include <string.h>
 
-#define _DEBUG DEBUG
+#define _GNU_SOURCE
+#define __USE_GNU
+
+#include <dlfcn.h>
+#include <execinfo.h>
+#include <link.h>
+
+//#define _DEBUG DEBUG
 
 enum kieker_init_states {
 	UNCONFIGURED = 0, CONFIGURED = 1, FAILED = -1
@@ -68,6 +75,7 @@ kieker_thread_array_entry* kieker_controller_create_thread_entry() {
 	kieker_thread_array[kieker_thread_array_size].process_id = getpid();
 	kieker_thread_array[kieker_thread_array_size].thread_id = getpid(); // TODO gettid seems not to be available and is also not POSIX conform
 	kieker_thread_array[kieker_thread_array_size].trace_id = 0;
+	kieker_thread_array[kieker_thread_array_size].order_index = 0;
 
 	kieker_thread_array_size++;
 
@@ -180,17 +188,28 @@ const char* kieker_controller_get_hostname() {
 	return kieker_hostname;
 }
 
+void* kieker_controller_convert_to__vma(void* addr)
+{
+  Dl_info info;
+  struct link_map* link_map;
+  dladdr1(addr,&info,(void**)&link_map, RTLD_DL_LINKMAP);
+
+  return addr-link_map->l_addr;
+}
+
+/** Constant conversion buffer to store %p output. 2 for the 0x prefix, 16 for hex-digits, 1 for 0 termination. */
+char kieker_controllor_get_operation_fqn_result[2 + 16 + 1];
 /**
  * Lookup the function name and parameters and produce a FQN string from it.
  *
  * Return the complete string or "<lookup failed %p>"
  */
 const char* kieker_controller_get_operation_fqn(void *function_ptr) {
-	char *result = malloc(16 + 2 + 16 + 1);
+	sprintf(kieker_controllor_get_operation_fqn_result, "%p", kieker_controller_convert_to__vma(function_ptr));
 
-	sprintf(result, "<lookup failed %p>", function_ptr);
+//	sprintf(result, "%p", function_ptr);
 
-	return result;
+	return kieker_controllor_get_operation_fqn_result;
 }
 
 /**
@@ -200,7 +219,6 @@ const char* kieker_controller_get_operation_fqn(void *function_ptr) {
  * offset = offset in the buffer
  */
 int kieker_monitoring_controller_prefix_serialize(int id, int offset) {
-	fprintf(stderr,"ID %d\n", id);
 	int position = offset;
 
 	position += kieker_serialize_int32(kieker_controller_buffer, position, id);

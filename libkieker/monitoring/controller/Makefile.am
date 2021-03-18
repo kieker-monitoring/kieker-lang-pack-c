@@ -7,7 +7,7 @@ noinst_LTLIBRARIES = libcontroller.la
 libcontroller_la_SOURCES = kieker_io.c kieker_lookup.c kieker_controller.c
 
 # Linker options libTestProgram
-libcontroller_la_LDFLAGS =
+libcontroller_la_LDFLAGS = -lbfd
 
 # Compiler options. Here we are adding the include directory
 # to be searched for headers included in the source code.

@@ -1,2 +1,2 @@
-SUBDIRS=basic-example
+SUBDIRS=basic-example instrument-example bfd
 
