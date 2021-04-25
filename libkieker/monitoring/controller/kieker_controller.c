@@ -76,10 +76,19 @@ kieker_thread_array_entry* kieker_controller_create_thread_entry() {
 	kieker_thread_array[kieker_thread_array_size].thread_id = getpid(); // TODO gettid seems not to be available and is also not POSIX conform
 	kieker_thread_array[kieker_thread_array_size].trace_id = 0;
 	kieker_thread_array[kieker_thread_array_size].order_index = 0;
+	kieker_thread_array[kieker_thread_array_size].stack = 0;
 
 	kieker_thread_array_size++;
 
 	return &kieker_thread_array[kieker_thread_array_size - 1];
+}
+
+/*
+ * Prepare the entry for the next trace.
+ */
+void kieker_controller_clear_thread(kieker_thread_array_entry* entry) {
+	entry->trace_id++;
+	entry->order_index = 0;
 }
 
 /*

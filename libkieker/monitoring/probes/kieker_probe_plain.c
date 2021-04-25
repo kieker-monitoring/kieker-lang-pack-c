@@ -46,6 +46,7 @@ void kieker_probe_before_operation_record(const char* class_signature, const cha
 	event.orderIndex = entry->order_index;
 
 	entry->order_index++;
+	entry->stack++;
 
 	position = kieker_monitoring_controller_prefix_serialize(KIEKER_FLOW_BEFORE_OPERATION, position);
 	position = kieker_common_record_flow_trace_operation_before_operation_event_serialize(kieker_controller_get_buffer(), position, event);
@@ -65,9 +66,14 @@ void kieker_probe_after_operation_record(const char* class_signature, const char
 	event.orderIndex = entry->order_index;
 
 	entry->order_index++;
+	entry->stack--;
 
 	int position = kieker_monitoring_controller_prefix_serialize(KIEKER_FLOW_AFTER_OPERATION, position);
 	position = kieker_common_record_flow_trace_operation_after_operation_event_serialize(kieker_controller_get_buffer(), position, event);
 
 	kieker_controller_send(position);
+
+	if (entry->stack == 0) {
+		kieker_controller_clear_thread(entry);
+	}
 }

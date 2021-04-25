@@ -16,6 +16,7 @@ typedef struct __kieker_thread_array_entry {
 	pid_t process_id;
 	long long trace_id;
 	long long order_index;
+	long long stack;
 } kieker_thread_array_entry;
 
 /*
