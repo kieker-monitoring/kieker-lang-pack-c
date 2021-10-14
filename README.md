@@ -7,9 +7,9 @@ However, it also needs to conform to the current protocol version of binary Kiek
 
 After checkout, you may have to perform the following four operations before you can compile the library and the sample programs.
 
-- `aclocal`
 - `libtoolize`
-- `automake`
+- `aclocal`
+- `automake --add-missing`
 - `autoconf`
 
 ## Compile
