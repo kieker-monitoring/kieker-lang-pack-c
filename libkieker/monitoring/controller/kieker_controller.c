@@ -23,6 +23,7 @@
 #include <dlfcn.h>
 #include <execinfo.h>
 #include <link.h>
+#include <limits.h>
 
 //#define _DEBUG DEBUG
 
@@ -44,6 +45,14 @@ char *kieker_hostname;
 
 // temporary test
 int kwrite(int fd, const void *buf, size_t count, const char* caller);
+
+/*
+ * Internal controller functions.
+ */
+const char* kieker_controller_getenv_string(const char *name, const char *default_value);
+unsigned short kieker_controller_getenv_ushort(const char *name, unsigned short default_value);
+
+void kieker_controller_clear_thread(kieker_thread_array_entry* entry);
 
 /*
  * Global buffer for kieker IO.
@@ -95,9 +104,8 @@ void kieker_controller_clear_thread(kieker_thread_array_entry* entry) {
  * Initialize the kieker controller.
  */
 void kieker_controller_initialize() {
-	// TODO this must be read from configuration
-	char *host = "localhost";
-	unsigned short port = 5678;
+	const char *host = kieker_controller_getenv_string("KIEKER_HOSTNAME", "localhost");
+	unsigned short port = kieker_controller_getenv_ushort("KIEKER_PORT", 5678);
 	kieker_offset = 0;
 	kieker_controller_buffer = malloc(8192 * sizeof(char));
 	kieker_controller_string_buffer = malloc(8192 * sizeof(char));
@@ -125,6 +133,36 @@ void kieker_controller_initialize() {
 	} else {
 		fprintf(stderr, "Cannot setup connection.\n");
 		kieker_init_state = FAILED;
+	}
+}
+
+const char* kieker_controller_getenv_string(const char *name, const char *default_value) {
+	const char *value = getenv(name);
+	if (value == NULL) {
+		return default_value;
+	} else {
+		return value;
+	}
+}
+
+unsigned short kieker_controller_getenv_ushort(const char *name, unsigned short default_value) {
+	const char *value = getenv(name);
+	if (value == NULL) {
+		return default_value;
+	} else {
+		char *end;
+		long result = strtol(value, &end, 10);
+		if (value == end) {
+			fprintf(stderr,"Port number %s cannot be converted to a number.\n", value);
+			return default_value;
+		} else {
+			if (result > 0 && result <= USHRT_MAX) {
+				return (unsigned short)result;
+			} else {
+				fprintf(stderr,"Port value %ld is out of bounds [%d:%d].\n", result, 1, USHRT_MAX);
+				return default_value;
+			}
+		}
 	}
 }
 
