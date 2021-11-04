@@ -1,8 +1,8 @@
 #ifndef ABSTRACT_ASPECT_H
 #define ABSTRACT_ASPECT_H
 
-#include <Record/operation_execution_record.h>
-#include <Trace/trace.h>
+#include <common/record/controlflow/operation_execution_record.h>
+#include "trace.h"
 
 void init_aspect();
 trace_hash_t* before_aspect(OperationExecutionRecord *record);

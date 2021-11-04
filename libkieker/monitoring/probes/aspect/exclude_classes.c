@@ -1,9 +1,10 @@
-#include<Excluder/exclude_classes.h>
+#include "../../../libkieker/monitoring/probes/aspect/exclude_classes.h"
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
 
-#include<Util/kieker_error.h>
+#include "../../../libkieker/common/utilities/kieker_error.h"
 
 #define MAX_NUM_EXCLUDE_FILES 200
 

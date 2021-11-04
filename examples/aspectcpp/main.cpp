@@ -1,10 +1,11 @@
 #include <stdlib.h>
 #include <iostream>
 #include <omp.h>
-#include <math/fibs.hh>
-#include <math/power.h>
-#include <string/string_test.h>
-#include <measurement/measurement.h>
+
+#include "../aspectcpp/math/fibs.hh"
+#include "../aspectcpp/math/power.h"
+#include "../aspectcpp/measurement/measurement.h"
+#include "../aspectcpp/string/string_test.h"
 
 void call(int n) {
     std::cout << "calculate fib(" << n << ")" << std::endl;

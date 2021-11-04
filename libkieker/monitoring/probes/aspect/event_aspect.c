@@ -1,12 +1,11 @@
-#include <event_aspect.h>
+#include "../../libkieker/monitoring/probes/aspect/event_aspect.h"
 
 #include <unistd.h>
 #include <pthread.h>
 
-#include <Record/operation_event.h>
-#include <Excluder/exclude_classes.h>
-#include <Util/measure_time.h>
-#include <Util/kieker_error.h>
+#include "../../../common/utilities/kieker_error.h"
+#include "../../../common/utilities/measure_time.h"
+#include "exclude_classes.h"
 
 #define MAX_CALL_DEPTH 100
 

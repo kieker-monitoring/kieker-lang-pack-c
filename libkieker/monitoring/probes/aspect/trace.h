@@ -1,7 +1,7 @@
 #ifndef TRACE_H
 #define TRACE_H
 
-#include <Util/uthash.h>
+#include "../../../libkieker/common/utilities/uthash.h"
 
 /*
  * data type that save all trace relevant data

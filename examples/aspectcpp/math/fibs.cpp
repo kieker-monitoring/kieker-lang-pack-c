@@ -1,4 +1,4 @@
-#include <math/fibs.hh>
+#include "../../aspectcpp/math/fibs.hh"
 
 int fib_rec(int n) {
   switch(n) {

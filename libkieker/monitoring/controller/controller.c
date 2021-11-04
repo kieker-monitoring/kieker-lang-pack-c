@@ -1,10 +1,11 @@
-#include <controller.h>
+#include "../../libkieker/monitoring/controller/controller.h"
 
 #include <stdio.h>
 #include <pthread.h>
 
 #include <Util/socket.h>
-#include <Util/kieker_error.h>
+
+#include "../../libkieker/common/utilities/kieker_error.h"
 
 
 #define HOST "localhost"

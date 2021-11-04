@@ -1,12 +1,12 @@
-#include <abstract_aspect.h>
+#include "../../libkieker/monitoring/probes/aspect/abstract_aspect.h"
 
 #include <pthread.h>
 #include <unistd.h>
 
-#include <controller.h>
-#include <Trace/trace.h>
-#include <Util/measure_time.h>
-#include <Util/kieker_error.h>
+#include "../../../common/utilities/kieker_error.h"
+#include "../../../common/utilities/measure_time.h"
+#include "../../controller/controller.h"
+#include "trace.h"
 
 char hostname[128];
 int sockfd;

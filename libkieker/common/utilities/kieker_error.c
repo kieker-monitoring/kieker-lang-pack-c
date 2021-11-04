@@ -1,4 +1,4 @@
-#include <Util/kieker_error.h>
+#include "../../../libkieker/common/utilities/kieker_error.h"
 
 /*
  * print error message, use KIEKER_ERROR macro for better usabilty

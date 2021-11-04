@@ -1,4 +1,4 @@
-#include <Trace/trace.h>
+#include "../../../libkieker/monitoring/probes/aspect/trace.h"
 
 #include <time.h>
 
