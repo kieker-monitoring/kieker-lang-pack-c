@@ -1,6 +1,12 @@
 # README
 
-Please note: THis language pack is in an early stage of development.
+Please note: This language pack is in an early stage of development.
+
+## AspectC++ AOP
+
+There is initial code using aspectC++ for instrumentation. This is not yet
+included in the code based of the kieker library. However, we will merge
+both code bases.
 
 ## Before Compiling
 
@@ -50,4 +56,12 @@ export LIBS=-lkieker
 export LDFLAGS=-L/my/directory/lib/
 export CFLAGS=-finstrument-functions
 
+Kieker supports two environment variables:
+- KIEKER_HOSTNAME
+- KIEKER_PORT
+which must be set to a port (default 5678) and a hostname (e.g. localhost)
+specifying the computer receiving the monitoring data.
+
+Use the Kieker collector to receive the data.
+https://kieker-monitoring.readthedocs.io/en/latest/kieker-tools/Collector---Kieker-Data-Bridge.html
 
