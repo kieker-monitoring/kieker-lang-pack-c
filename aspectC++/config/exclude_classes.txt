@@ -1,0 +1,4 @@
+# Klassen, die nicht gemonitored werden sollen
+
+full.qualified.class.name
+

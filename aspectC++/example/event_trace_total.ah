@@ -1,0 +1,5 @@
+#include "event_monitoring.ah"
+
+aspect TraceTotal : public monitoringAspect {
+	pointcut monitoringPC() = execution("% ...::%(...)");	
+};

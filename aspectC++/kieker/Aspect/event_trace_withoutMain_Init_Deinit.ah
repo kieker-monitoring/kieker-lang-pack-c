@@ -1,0 +1,8 @@
+#include "event_trace_kirat_abstract.ah"
+
+pointcut include() = execution("% ...::%(...)");
+pointcut exclude() = execution("int main(...)") || execution("% %Init%(...)") || execution("% %Deinit%(...)");
+
+aspect TraceWithoutMain : public KiratAbstractTrace {
+	pointcut monitoringPC() = include() && !exclude() && kirat_exclude();	
+};

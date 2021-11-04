@@ -1,0 +1,5 @@
+#include "event_trace_kirat_abstract.ah"
+
+aspect TraceTotal : public KiratAbstractTrace {
+	pointcut monitoringPC() = execution("% ...::%(...)") && kirat_exclude();	
+};

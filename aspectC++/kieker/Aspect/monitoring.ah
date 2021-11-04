@@ -1,0 +1,51 @@
+#ifndef _monitoring_ah_
+#define _monitoring_ah_
+
+#include <string>
+
+#include <kieker.h>
+
+aspect monitoringAspect {
+
+    public:
+    pointcut includePC() = execution("% ...::%(...)");
+    //pointcut excludePC() = call("% std::%(...)") || call("% init_aspect()") || call("% before_aspect(...)") || call("% after_aspect(...)") || call("% after_aspect(...)");
+    pointcut excludePC() = call("void init_aspect()");
+    //pointcut excludePC() = call("void init_aspect()") || call("% ...::printf(...)");
+
+    pointcut monitoringPC() = execution("% ...::%(...)");
+    //pointcut monitoringPC() = call("int fib_%(...)") || call("int power(...)") || call("void call(...)");
+    //pointcut monitoringPC() = !excludePC();
+    //pointcut monitoringPC() = includePC() && !excludePC();
+
+    monitoringAspect() {
+        init_aspect();
+    }
+
+    advice monitoringPC() : around() {
+        OperationExecutionRecord record;
+        trace_hash_t* data;
+        char *operationSignature;
+
+        data = before_aspect(&record);
+
+        tjp->proceed();
+
+        after_aspect(data, &record);
+
+        std::string file = JoinPoint::filename();
+        std::string sig = JoinPoint::signature();
+        std::string opsig;
+
+        std::string name = file.substr(0, file.find_last_of("."));
+        opsig = name.append("::").append(sig);
+        operationSignature = (char*) opsig.c_str();
+
+        // send data
+        record.operationSignature = operationSignature;
+
+        after_aspect2(data, &record);
+    }
+};
+
+#endif

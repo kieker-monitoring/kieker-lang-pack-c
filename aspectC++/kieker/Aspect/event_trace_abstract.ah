@@ -1,0 +1,40 @@
+#ifndef _EVENT_MONITORING_H_
+#define _EVENT_MONITORING_H_
+
+#include <string>
+#include <algorithm>
+
+#include <kieker.h>
+
+aspect monitoringAspect {
+
+    public:
+    pointcut virtual monitoringPC() = 0;
+
+    monitoringAspect() {
+        init_event_aspect();
+    }
+
+    advice monitoringPC() : around() {
+        std::string sig = JoinPoint::signature();
+        char* opsig = (char*) sig.c_str();
+
+        std::string file = JoinPoint::filename();
+
+        /* remove file extention */
+        std::string name = file.substr(0, file.find_last_of("."));
+
+	/* replace '/' with '.' to use file path as package structure */
+	std::replace(name.begin(), name.end(), '/', '.');
+
+        char* classsig = (char*) name.c_str();
+
+        trace_hash_t* data = before_event_aspect(opsig, classsig);
+
+        tjp->proceed();
+
+        after_event_aspect(data, opsig, classsig);
+    }
+};
+
+#endif

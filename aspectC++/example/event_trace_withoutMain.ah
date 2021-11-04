@@ -1,0 +1,5 @@
+#include "event_monitoring.ah"
+
+aspect TraceWithoutMain : public monitoringAspect {
+	pointcut monitoringPC() = execution("% ...::%(...)") && !execution("int main(...)") && !execution("void call(...)");	
+};
