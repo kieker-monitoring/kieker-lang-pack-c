@@ -13,13 +13,14 @@
 #include "../../common/record/flow/trace/operation/before_operation_event.h"
 #include "../../common/record/flow/trace/operation/after_operation_event.h"
 #include "../../common/record/flow/trace/trace_metadata.h"
+#include "../controller/kieker_trace.h"
 
 
 void kieker_probe_before_operation_record(const char* class_signature, const char* operation_signature) {
 	kieker_common_record_flow_trace_operation_before_operation_event event;
 	int position = 0;
 
-	kieker_thread_array_entry* entry = kieker_controller_get_thread_entry();
+	kieker_trace_hash_t* entry = kieker_trace_get();
 
 	if (entry->order_index == 0) { // new thread
 		kieker_common_record_flow_trace_trace_metadata trace_metadata;
@@ -35,8 +36,6 @@ void kieker_probe_before_operation_record(const char* class_signature, const cha
 
 		position = kieker_monitoring_controller_prefix_serialize(KIEKER_FLOW_TRACE_METADATA, position);
 		position = kieker_common_record_flow_trace_trace_metadata_serialize(kieker_controller_get_buffer(), position, trace_metadata);
-		kieker_controller_send(position);
-		position = 0;
 	}
 
 	event.timestamp = kieker_controller_get_time_ms();
@@ -57,7 +56,7 @@ void kieker_probe_before_operation_record(const char* class_signature, const cha
 void kieker_probe_after_operation_record(const char* class_signature, const char* operation_signature) {
 	kieker_common_record_flow_trace_operation_after_operation_event event;
 
-	kieker_thread_array_entry* entry = kieker_controller_get_thread_entry();
+	kieker_trace_hash_t* entry = kieker_trace_get();
 
 	event.timestamp = kieker_controller_get_time_ms();
 	event.traceId = entry->trace_id;
@@ -74,6 +73,6 @@ void kieker_probe_after_operation_record(const char* class_signature, const char
 	kieker_controller_send(position);
 
 	if (entry->stack == 0) {
-		kieker_controller_clear_thread(entry);
+		kieker_trace_remove(entry);
 	}
 }

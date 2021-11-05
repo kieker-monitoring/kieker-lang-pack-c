@@ -1,7 +1,8 @@
-#include "../../../libkieker/common/utilities/measure_time.h"
+#include "../../monitoring/utilities/measure_time.h"
 
 #include <stdlib.h>
-#include "../../../libkieker/common/utilities/kieker_error.h"
+
+#include "../../monitoring/utilities/kieker_error.h"
 
 /*
  * return current system time in nano seconds

@@ -2,12 +2,14 @@
  * kieker_controller.c
  *
  *  Created on: Apr 17, 2020
- *      Author: reiner
+ *      Author: Reiner Jung
  */
 
 #include "kieker_controller.h"
 #include "kieker_io.h"
 #include "kieker_serialize.h"
+#include "kieker_trace.h"
+#include "../utilities/kieker_error.h"
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -16,6 +18,7 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <string.h>
+#include <pthread.h>
 
 #define _GNU_SOURCE
 #define __USE_GNU
@@ -25,14 +28,9 @@
 #include <link.h>
 #include <limits.h>
 
-//#define _DEBUG DEBUG
-
 enum kieker_init_states {
 	UNCONFIGURED = 0, CONFIGURED = 1, FAILED = -1
 };
-
-long kieker_thread_array_size = 0;
-kieker_thread_array_entry *kieker_thread_array = NULL;
 
 int kieker_socket = 0;
 int kieker_offset = 0;
@@ -40,19 +38,80 @@ int kieker_offset = 0;
 int kieker_error = 0;
 enum kieker_init_states kieker_init_state = UNCONFIGURED;
 
+char *kieker_controller_buffer;
 char *kieker_controller_string_buffer;
 char *kieker_hostname;
 
-// temporary test
-int kwrite(int fd, const void *buf, size_t count, const char* caller);
+pthread_rwlock_t kieker_controller_hash_lock;
 
 /*
  * Internal controller functions.
  */
-const char* kieker_controller_getenv_string(const char *name, const char *default_value);
-unsigned short kieker_controller_getenv_ushort(const char *name, unsigned short default_value);
+const char* kieker_controller_getenv_string(const char *name,
+		const char *default_value);
+unsigned short kieker_controller_getenv_ushort(const char *name,
+		unsigned short default_value);
 
-void kieker_controller_clear_thread(kieker_thread_array_entry* entry);
+void kieker_controller_print_configuration(const char *hostname,
+		unsigned short port);
+
+/*
+ * Initialize the kieker controller.
+ */
+void kieker_controller_initialize() {
+	if (kieker_init_state == UNCONFIGURED) {
+		int ret = pthread_rwlock_init(&kieker_controller_hash_lock, NULL);
+		if (ret != 0) {
+			KIEKER_ERROR("Could not create rwlock!");
+			kieker_init_state = FAILED;
+			return;
+		}
+		const char *host = kieker_controller_getenv_string("KIEKER_HOSTNAME",
+				"localhost");
+		unsigned short port = kieker_controller_getenv_ushort("KIEKER_PORT",
+				5678);
+		kieker_offset = 0;
+		kieker_controller_buffer = malloc(8192 * sizeof(char));
+		kieker_controller_string_buffer = malloc(8192 * sizeof(char));
+
+    	kieker_trace_init_id();
+
+		if ((kieker_socket = kieker_io_client_socket_open(host, port)) != -1) {
+			// TODO this must loop over a record registration file
+			kieker_offset += kieker_serialize_string(kieker_controller_buffer,
+					kieker_offset,
+					"kieker.common.record.flow.trace.TraceMetadata");
+			kieker_offset +=
+					kieker_serialize_string(kieker_controller_buffer,
+							kieker_offset,
+							"kieker.common.record.flow.trace.operation.BeforeOperationEvent");
+			kieker_offset +=
+					kieker_serialize_string(kieker_controller_buffer,
+							kieker_offset,
+							"kieker.common.record.flow.trace.operation.AfterOperationEvent");
+
+			kieker_offset = 0;
+
+			kieker_hostname = malloc(200);
+			if (gethostname(kieker_hostname, 199) == -1) {
+				kieker_error = errno;
+				fprintf(stderr, "Failure looking up hostname: %s\n",
+						strerror(kieker_error));
+				kieker_hostname = "<failed>";
+			}
+			kieker_controller_print_configuration(host, port);
+			int error_code = atexit(kieker_controller_finalize);
+			if (error_code != 0) {
+				fprintf(stderr, "Cannot set exit function.\n");
+				kieker_init_state = FAILED;
+				kieker_controller_finalize();
+			}
+		} else {
+			fprintf(stderr, "Cannot setup connection.\n");
+			kieker_init_state = FAILED;
+		}
+	}
+}
 
 /*
  * Global buffer for kieker IO.
@@ -68,75 +127,8 @@ long long kieker_controller_get_time_ms() {
 	return ((long long) call_time.tv_sec * 1000000) + call_time.tv_usec;
 }
 
-/*
- * Find a thread entry and return it. In case no thread entry is present return NULL.
- * If no thread is currently in the list, return NULL
- */
-kieker_thread_array_entry* kieker_controller_create_thread_entry() {
-	if (kieker_thread_array_size == 0) {
-		kieker_thread_array = malloc(sizeof(kieker_thread_array_entry));
-	} else {
-		kieker_thread_array = realloc(kieker_thread_array,
-				sizeof(kieker_thread_array_entry)
-						* (kieker_thread_array_size + 1));
-	}
-
-	kieker_thread_array[kieker_thread_array_size].process_id = getpid();
-	kieker_thread_array[kieker_thread_array_size].thread_id = getpid(); // TODO gettid seems not to be available and is also not POSIX conform
-	kieker_thread_array[kieker_thread_array_size].trace_id = 0;
-	kieker_thread_array[kieker_thread_array_size].order_index = 0;
-	kieker_thread_array[kieker_thread_array_size].stack = 0;
-
-	kieker_thread_array_size++;
-
-	return &kieker_thread_array[kieker_thread_array_size - 1];
-}
-
-/*
- * Prepare the entry for the next trace.
- */
-void kieker_controller_clear_thread(kieker_thread_array_entry* entry) {
-	entry->trace_id++;
-	entry->order_index = 0;
-}
-
-/*
- * Initialize the kieker controller.
- */
-void kieker_controller_initialize() {
-	const char *host = kieker_controller_getenv_string("KIEKER_HOSTNAME", "localhost");
-	unsigned short port = kieker_controller_getenv_ushort("KIEKER_PORT", 5678);
-	kieker_offset = 0;
-	kieker_controller_buffer = malloc(8192 * sizeof(char));
-	kieker_controller_string_buffer = malloc(8192 * sizeof(char));
-
-	if ((kieker_socket = kieker_io_client_socket_open(host, port)) != -1) {
-		// TODO this must loop over a record registration file
-		kieker_offset += kieker_serialize_string(kieker_controller_buffer,
-				kieker_offset, "kieker.common.record.flow.trace.TraceMetadata");
-		kieker_offset +=
-				kieker_serialize_string(kieker_controller_buffer, kieker_offset,
-						"kieker.common.record.flow.trace.operation.BeforeOperationEvent");
-		kieker_offset +=
-				kieker_serialize_string(kieker_controller_buffer, kieker_offset,
-						"kieker.common.record.flow.trace.operation.AfterOperationEvent");
-
-		kieker_offset = 0;
-
-		kieker_hostname = malloc(200);
-		if (gethostname(kieker_hostname, 199) == -1) {
-			kieker_error = errno;
-			fprintf(stderr, "Failure looking up hostname: %s\n",
-					strerror(kieker_error));
-			kieker_hostname = "<failed>";
-		}
-	} else {
-		fprintf(stderr, "Cannot setup connection.\n");
-		kieker_init_state = FAILED;
-	}
-}
-
-const char* kieker_controller_getenv_string(const char *name, const char *default_value) {
+const char* kieker_controller_getenv_string(const char *name,
+		const char *default_value) {
 	const char *value = getenv(name);
 	if (value == NULL) {
 		return default_value;
@@ -145,7 +137,8 @@ const char* kieker_controller_getenv_string(const char *name, const char *defaul
 	}
 }
 
-unsigned short kieker_controller_getenv_ushort(const char *name, unsigned short default_value) {
+unsigned short kieker_controller_getenv_ushort(const char *name,
+		unsigned short default_value) {
 	const char *value = getenv(name);
 	if (value == NULL) {
 		return default_value;
@@ -153,20 +146,20 @@ unsigned short kieker_controller_getenv_ushort(const char *name, unsigned short 
 		char *end;
 		long result = strtol(value, &end, 10);
 		if (value == end) {
-			fprintf(stderr,"Port number %s cannot be converted to a number.\n", value);
+			fprintf(stderr, "Port number %s cannot be converted to a number.\n",
+					value);
 			return default_value;
 		} else {
 			if (result > 0 && result <= USHRT_MAX) {
-				return (unsigned short)result;
+				return (unsigned short) result;
 			} else {
-				fprintf(stderr,"Port value %ld is out of bounds [%d:%d].\n", result, 1, USHRT_MAX);
+				fprintf(stderr, "Port value %ld is out of bounds [%d:%d].\n",
+						result, 1, USHRT_MAX);
 				return default_value;
 			}
 		}
 	}
 }
-
-// TODO register shutdown hook
 
 /**
  * Append a string to the send buffer.
@@ -178,8 +171,7 @@ void kieker_controller_send_string(const char *string, int id) {
 	kieker_serialize_int32(kieker_controller_string_buffer, 8, length);
 	strncpy(kieker_controller_string_buffer + 4 + 4 + 4, string, length);
 
-	if (kwrite(kieker_socket, kieker_controller_string_buffer, length + 4 + 4 + 4, "send string")
-			== -1) {
+	if (write(kieker_socket, kieker_controller_string_buffer, length + 4 + 4 + 4) == -1) {
 		kieker_error = errno;
 		fprintf(stderr, "Write failure sending initial strings: %s\n",
 				strerror(kieker_error));
@@ -194,31 +186,11 @@ void kieker_controller_send_string(const char *string, int id) {
  * length = length of the data stored in the buffer
  */
 void kieker_controller_send(int length) {
-	if (kwrite(kieker_socket, kieker_controller_buffer, length, "record send") == -1) {
+	if (write(kieker_socket, kieker_controller_buffer, length) == -1) {
 		kieker_error = errno;
 		fprintf(stderr, "Write failure: %s\n", strerror(kieker_error));
 	}
 	fsync(kieker_socket);
-}
-
-/*
- * Find a thread entry and return it. In case no thread entry is present return NULL.
- * If no thread is currently in the list, return NULL
- */
-kieker_thread_array_entry* kieker_controller_get_thread_entry() {
-	if (kieker_thread_array_size != 0) {
-		pid_t current_thread_id = getpid(); // TODO gettid might not work we need a posix conform alternative
-		for (int i = 0; i < kieker_thread_array_size; i++) {
-			if (kieker_thread_array[i].thread_id == current_thread_id) {
-				return &kieker_thread_array[i];
-			}
-		}
-
-		return kieker_controller_create_thread_entry();
-	} else {
-		kieker_controller_initialize();
-		return kieker_controller_create_thread_entry();
-	}
 }
 
 /*
@@ -235,13 +207,12 @@ const char* kieker_controller_get_hostname() {
 	return kieker_hostname;
 }
 
-void* kieker_controller_convert_to__vma(void* addr)
-{
-  Dl_info info;
-  struct link_map* link_map;
-  dladdr1(addr,&info,(void**)&link_map, RTLD_DL_LINKMAP);
+void* kieker_controller_convert_to__vma(void *addr) {
+	Dl_info info;
+	struct link_map *link_map;
+	dladdr1(addr, &info, (void**) &link_map, RTLD_DL_LINKMAP);
 
-  return addr-link_map->l_addr;
+	return addr - link_map->l_addr;
 }
 
 /** Constant conversion buffer to store %p output. 2 for the 0x prefix, 16 for hex-digits, 1 for 0 termination. */
@@ -252,7 +223,8 @@ char kieker_controllor_get_operation_fqn_result[2 + 16 + 1];
  * Return the complete string or "<lookup failed %p>"
  */
 const char* kieker_controller_get_operation_fqn(void *function_ptr) {
-	sprintf(kieker_controllor_get_operation_fqn_result, "%p", kieker_controller_convert_to__vma(function_ptr));
+	sprintf(kieker_controllor_get_operation_fqn_result, "%p",
+			kieker_controller_convert_to__vma(function_ptr));
 
 //	sprintf(result, "%p", function_ptr);
 
@@ -269,61 +241,21 @@ int kieker_monitoring_controller_prefix_serialize(int id, int offset) {
 	int position = offset;
 
 	position += kieker_serialize_int32(kieker_controller_buffer, position, id);
-	position += kieker_serialize_int64(kieker_controller_buffer, position, kieker_controller_get_time_ms());
+	position += kieker_serialize_int64(kieker_controller_buffer, position,
+			kieker_controller_get_time_ms());
 
 	return position;
 }
 
-#define WIDTH 16
-#define REST (WIDTH - 1)
-
-int kwrite(int fd, const void *buf, size_t count, const char *caller) {
-#ifdef _DEBUG
-	fprintf(stderr, "Write: %s ------------------\n", caller);
-	int i;
-	const char* read_buf = (const char*) buf;
-	for (i = 0; i < count; i++) {
-		char ch = *read_buf;
-		read_buf++;
-		fprintf(stderr, "%02x ", (unsigned char)ch);
-		if (i % (WIDTH/2) == (WIDTH/2-1)) {
-			fprintf(stderr," ");
-		}
-		if (i % WIDTH == REST) {
-			int j;
-			const char *read_buf2 = read_buf - REST;
-			for (j = 0; j < WIDTH; j++) {
-				char ch2 = *read_buf2;
-				read_buf2++;
-				if (ch2 > 31) {
-					fprintf(stderr, "%c", ch2);
-				} else {
-					fprintf(stderr, ".");
-				}
-			}
-			fprintf(stderr, "\n");
-		}
-	}
-	if (i % WIDTH != 0) {
-		int j;
-		for (j = 0; j < WIDTH - i % WIDTH; j++) {
-			fprintf(stderr, "   ");
-		}
-		const char *read_buf2 = read_buf - i % WIDTH;
-		for (j = 0; j < i % WIDTH; j++) {
-			char ch2 = *read_buf2;
-			read_buf2++;
-			if (ch2 > 31) {
-				fprintf(stderr, "%c", ch2);
-			} else {
-				fprintf(stderr, ".");
-			}
-		}
-		fprintf(stderr, "\n");
-	}
-
-	fprintf(stderr, "\n-------------------------\n");
-#endif
-	return write(fd, buf, count);
+void kieker_controller_print_configuration(const char *hostname,
+		unsigned short port) {
+	fprintf(stdout, "Kieker Configuration\n");
+	fprintf(stdout, "\tcollector hostname = %s\n", hostname);
+	fprintf(stdout, "\tcollector port = %d\n", port);
 }
 
+void kieker_controller_finalize() {
+	kieker_io_socket_close(kieker_socket);
+    pthread_rwlock_destroy(&kieker_controller_hash_lock);
+    kieker_init_state = UNCONFIGURED;
+}

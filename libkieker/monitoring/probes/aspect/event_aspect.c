@@ -3,24 +3,17 @@
 #include <unistd.h>
 #include <pthread.h>
 
-#include "../../../common/utilities/kieker_error.h"
-#include "../../../common/utilities/measure_time.h"
-#include "exclude_classes.h"
-
-#define MAX_CALL_DEPTH 100
-
-
-char hostname[128];
-int sockfd;
+#include "../../utilities/kieker_error.h"
+#include "../../utilities/measure_time.h"
+#include "../../../include/kieker_controller.h"
+#include "../../controller/kieker_adaptive_monitoring.h"
 
 /*
  * init the event aspect
  */
 void init_event_aspect() {
-    init_controller();
-    gethostname(hostname, 128);
-    sockfd = get_socket();
-    int ret = load_exclude_file("exclude_classes.txt");
+	kieker_controller_initialize();
+    int ret = kieker_adaptive_load_exclude_file("exclude_classes.txt");
     if (ret < 0) {
         exit(-1);
     }
@@ -29,75 +22,71 @@ void init_event_aspect() {
 /*
  * sends the monitoring data before the call of the monitored function
  */
-trace_hash_t* before_event_aspect(char *operationSignature, char *classSignature) {
-    int thread_id = (int) pthread_self();
-
+kieker_trace_hash_t* before_event_aspect(char *operationSignature, char *classSignature) {
     /* get trace */
-    trace_hash_t* data = get_trace(thread_id);
-    trace_t* trace = data->trace;
+    kieker_trace_hash_t* trace = kieker_trace_get();
 
     /* new created trace */
-    if (trace->eoi == -1) {
+    if (trace->order_index == -1) {
         /* send meta data */
-        TraceMetaData meta;
+    	kieker_common_record_flow_trace_trace_metadata meta;
         meta.traceId = trace->trace_id;
-        meta.threadId = thread_id;
+        meta.threadId = trace->thread_id;
         meta.sessionId = "<no session>";
-        meta.hostname = hostname;
+        meta.hostname = kieker_controller_get_hostname();
         meta.parentTraceId = -1;
         meta.parentOrderId = -1;
 
-        send_trace_meta_data(&meta, trace->buffer);
+        send_trace_meta_data(meta, trace->buffer);
     }
 
-    trace->ess++;
+    trace->stack++;
 
     /* only send monitoring data if MAX_CALL_DEPTH is not reached and
      * component is not excluded from monitoring
      */
-    if (trace->ess < MAX_CALL_DEPTH && !is_class_excluded(classSignature)) {
-        trace->eoi++;
+    if (!kieker_adaptive_is_class_excluded(classSignature)) {
+        trace->order_index++;
 
-        OperationEvent event;
+        kieker_common_record_flow_trace_operation_before_operation_event event;
         event.timestamp = measure_time();
         event.traceId = trace->trace_id;
-        event.orderIndex = trace->eoi;
+        event.orderIndex = trace->order_index;
         event.operationSignature = operationSignature;
         event.classSignature = classSignature;
 
-        send_before_event(&event, trace->buffer);
+        send_before_event(event, trace->buffer);
     }
 
-    return data;
+    return trace;
 }
 
 /*
- * sends the monitoring data aftere the call of the monitored function
+ * sends the monitoring data after the call of the monitored function
  */
-void after_event_aspect(trace_hash_t *data, char *operationSignature, char *classSignature) {
-    trace_t* trace = data->trace;
+void after_event_aspect(kieker_trace_hash_t *trace, char *operationSignature, char *classSignature) {
 
     /* only send monitoring data if MAX_CALL_DEPTH is not reached and
      * component is not excluded from monitoring
      */
-    if (trace->ess < MAX_CALL_DEPTH && !is_class_excluded(classSignature)) {
-        trace->eoi++;
+    if (!kieker_adaptive_is_class_excluded(classSignature)) {
+        trace->order_index++;
 
-        OperationEvent event;
+        kieker_common_record_flow_trace_operation_after_operation_event event;
         event.timestamp = measure_time();
         event.traceId = trace->trace_id;
-        event.orderIndex = trace->eoi;
+        event.orderIndex = trace->order_index;
         event.operationSignature = operationSignature;
         event.classSignature = classSignature;
 
-        send_after_event(&event, trace->buffer);
+        send_after_event(event, trace->buffer);
     }
 
-    trace->ess--;
+    trace->stack--;
 
     /* detect end of trace */
-    if (data->trace->ess == -1) {
-        remove_trace(data);
+    if (trace->stack == -1) {
+        kieker_trace_remove(trace);
 	/* reset trace object */
 	//data->trace->eoi = -1;
     }
@@ -107,29 +96,23 @@ void after_event_aspect(trace_hash_t *data, char *operationSignature, char *clas
  * deinit event aspect
  */
 void deinit_event_aspect() {
-    deinit_controller();
+    kieker_controller_finalize();
 }
 
-void send_before_event(const OperationEvent *event, char* buffer) {
-    int length = before_operation_event_serialize(buffer, 0, event);
+void send_before_event(const kieker_common_record_flow_trace_operation_before_operation_event event, char* buffer) {
+    int length = kieker_common_record_flow_trace_operation_before_operation_event_serialize(buffer, 0, event);
 
-    int ret = write(sockfd, buffer, length);
-    if (ret < 0)
-        KIEKER_ERROR("Could not write to socket!");
+    kieker_controller_send(length);
 }
 
-void send_after_event(const OperationEvent *event, char* buffer) {
-    int length = after_operation_event_serialize(buffer, 0, event);
+void send_after_event(const kieker_common_record_flow_trace_operation_after_operation_event event, char* buffer) {
+    int length = kieker_common_record_flow_trace_operation_after_operation_event_serialize(kieker_controller_get_buffer(), 0, event);
 
-    int ret = write(sockfd, buffer, length);
-    if (ret < 0)
-        KIEKER_ERROR("Could not write to socket!");
+    kieker_controller_send(length);
 }
 
-void send_trace_meta_data(const TraceMetaData *meta, char* buffer) {
-    int length = trace_meta_data_serialize(buffer, 40, 0, meta);
+void send_trace_meta_data(const kieker_common_record_flow_trace_trace_metadata meta, char* buffer) {
+    int length = kieker_common_record_flow_trace_trace_metadata_serialize(buffer, 40, meta);
 
-    int ret = write(sockfd, buffer, length);
-    if (ret < 0)
-        KIEKER_ERROR("Could not write to socket!");
+    kieker_controller_send(length);
 }

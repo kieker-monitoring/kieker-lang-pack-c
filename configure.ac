@@ -44,9 +44,11 @@ libkieker/common/record/Makefile
 libkieker/common/record/remotecontrol/Makefile
 libkieker/common/utilities/Makefile
 libkieker/common/Makefile
-libkieker/monitoring/probes/Makefile
 libkieker/monitoring/Makefile
 libkieker/monitoring/controller/Makefile
+libkieker/monitoring/probes/Makefile
+libkieker/monitoring/probes/aspect/Makefile
+libkieker/monitoring/utilities/Makefile
 libkieker/Makefile
 libkieker/include/Makefile)
 

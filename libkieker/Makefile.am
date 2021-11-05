@@ -20,6 +20,8 @@ libkieker_la_LIBADD = common/record/controlflow/libcontrolflow.la \
 	common/record/remotecontrol/libremotecontrol.la \
 	common/utilities/libutilities.la \
 	monitoring/controller/libcontroller.la \
-	monitoring/probes/libprobes.la
+	monitoring/probes/libprobes.la \
+	monitoring/probes/aspect/libaspect.la \
+	monitoring/utilities/libutilities.la
 
 

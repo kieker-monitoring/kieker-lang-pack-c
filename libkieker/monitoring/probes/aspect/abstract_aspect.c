@@ -3,72 +3,61 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#include "../../../common/utilities/kieker_error.h"
-#include "../../../common/utilities/measure_time.h"
-#include "../../controller/controller.h"
-#include "trace.h"
-
-char hostname[128];
-int sockfd;
+#include "../../utilities/kieker_error.h"
+#include "../../utilities/measure_time.h"
+#include "../../../include/kieker_controller.h"
+#include "../../controller/kieker_trace.h"
 
 void init_aspect() {
-    init_controller();
-    gethostname(hostname, 128);
-    sockfd = get_socket();
+	kieker_controller_initialize();
 }
 
-trace_hash_t* before_aspect(OperationExecutionRecord* record) {
+kieker_trace_hash_t* before_aspect(kieker_common_record_controlflow_operation_execution_record* record) {
     /* get thread unique identifier */
     int thread_id = (int) pthread_self();
 
-    trace_t* trace;
-
-    trace_hash_t* data = get_trace(thread_id);
-
-    trace = data->trace;
+    kieker_trace_hash_t* trace = kieker_trace_get(thread_id);
 
     /* increment indexes */
-    trace->eoi++;
-    trace->ess++;
+    trace->order_index++;
+    trace->stack++;
 
     /* set record data */
-    record->hostname = hostname;
+    record->hostname = kieker_controller_get_hostname();;
     record->sessionId = "<no session>";
-    record->traceId = data->trace->trace_id;
-    record->eoi = trace->eoi;
-    record->ess = trace->ess;
+    record->traceId = trace->trace_id;
+    record->eoi = trace->order_index;
+    record->ess = trace->stack;
 
     /* measure entry time */
     record->tin = measure_time();
 
-    return data;
+    return trace;
 }
 
-void after_aspect(trace_hash_t *data, OperationExecutionRecord *record) {
+void after_aspect(kieker_trace_hash_t *trace, kieker_common_record_controlflow_operation_execution_record *record) {
     /* measure exit time */
     record->tout = measure_time();
 
     /* decrement execution stack index */
-    data->trace->ess--;
+    trace->stack--;
 }
 
-void after_aspect2(trace_hash_t *data, OperationExecutionRecord* record) {
-    send_record(record, data->trace->buffer);
+void after_aspect2(kieker_trace_hash_t *trace, kieker_common_record_controlflow_operation_execution_record *record) {
+    send_record(record, trace->buffer);
 
     /* detect end of trace */
-    if (data->trace->ess == -1) {
-        remove_trace(data);
+    if (trace->stack == -1) {
+        kieker_trace_remove(trace);
     }
 }
 
 void deinit_aspect() {
-    deinit_controller();
+    kieker_controller_finalize();
 }
 
-void send_record(const OperationExecutionRecord *record, char* buffer) {
-    int length = operation_execution_record_serialize(buffer, 10, 0, *record);
+void send_record(const kieker_common_record_controlflow_operation_execution_record *record, char* buffer) {
+    int length = kieker_common_record_controlflow_operation_execution_record_serialize(buffer, 0, *record);
 
-    int ret = write(sockfd, buffer, length);
-    if (ret < 0)
-        KIEKER_ERROR("Could not write to socket!");
+    kieker_controller_send(length);
 }

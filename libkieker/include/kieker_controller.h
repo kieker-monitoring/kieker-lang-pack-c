@@ -2,7 +2,7 @@
  * kieker_controller.h
  *
  *  Created on: Apr 17, 2020
- *      Author: reiner
+ *      Author: Reiner Jung
  */
 
 #ifndef LIBKIEKER_MONITORING_CONTROLLER_KIEKER_CONTROLLER_H_
@@ -11,24 +11,12 @@
 #include <sys/types.h>
 #include <stdlib.h>
 
-typedef struct __kieker_thread_array_entry {
-	pid_t thread_id;
-	pid_t process_id;
-	long long trace_id;
-	long long order_index;
-	long long stack;
-} kieker_thread_array_entry;
+void kieker_controller_initialize();
 
 /*
  * Return the current time since epoch in milliseconds.
  */
 long long kieker_controller_get_time_ms();
-
-/*
- * Find a thread entry and return it. In case no thread entry is present return NULL.
- * If no thread is currently in the list, return NULL
- */
-kieker_thread_array_entry* kieker_controller_get_thread_entry();
 
 /*
  * Return the hostname.
@@ -39,6 +27,8 @@ const char* kieker_controller_get_hostname();
  * Return the buffer.
  */
 char* kieker_controller_get_buffer();
+
+void kieker_controller_finalize();
 
 /**
  * Lookup the function name and parameters and produce a FQN string from it.
