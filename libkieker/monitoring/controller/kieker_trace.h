@@ -13,18 +13,18 @@ typedef struct kieker_trace_hash {
     char* buffer;
     int thread_id;
     UT_hash_handle hh;
-} kieker_trace_hash_t;
+} kieker_trace_t;
 
 void kieker_trace_init_id();
 
 /**
  * Get the current thread or return a new one.
  */
-kieker_trace_hash_t* kieker_trace_get();
+kieker_trace_t* kieker_trace_get();
 
 /**
  * Remove the specified trace trom the register.
  */
-void kieker_trace_remove(kieker_trace_hash_t *data);
+void kieker_trace_remove(kieker_trace_t *data);
 
 #endif

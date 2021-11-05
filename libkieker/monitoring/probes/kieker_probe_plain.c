@@ -20,7 +20,7 @@ void kieker_probe_before_operation_record(const char* class_signature, const cha
 	kieker_common_record_flow_trace_operation_before_operation_event event;
 	int position = 0;
 
-	kieker_trace_hash_t* entry = kieker_trace_get();
+	kieker_trace_t* entry = kieker_trace_get();
 
 	if (entry->order_index == 0) { // new thread
 		kieker_common_record_flow_trace_trace_metadata trace_metadata;
@@ -56,7 +56,7 @@ void kieker_probe_before_operation_record(const char* class_signature, const cha
 void kieker_probe_after_operation_record(const char* class_signature, const char* operation_signature) {
 	kieker_common_record_flow_trace_operation_after_operation_event event;
 
-	kieker_trace_hash_t* entry = kieker_trace_get();
+	kieker_trace_t* entry = kieker_trace_get();
 
 	event.timestamp = kieker_controller_get_time_ms();
 	event.traceId = entry->trace_id;

@@ -22,9 +22,9 @@ void init_event_aspect() {
 /*
  * sends the monitoring data before the call of the monitored function
  */
-kieker_trace_hash_t* before_event_aspect(char *operationSignature, char *classSignature) {
+kieker_trace_t* before_event_aspect(char *operationSignature, char *classSignature) {
     /* get trace */
-    kieker_trace_hash_t* trace = kieker_trace_get();
+    kieker_trace_t* trace = kieker_trace_get();
 
     /* new created trace */
     if (trace->order_index == -1) {
@@ -64,7 +64,7 @@ kieker_trace_hash_t* before_event_aspect(char *operationSignature, char *classSi
 /*
  * sends the monitoring data after the call of the monitored function
  */
-void after_event_aspect(kieker_trace_hash_t *trace, char *operationSignature, char *classSignature) {
+void after_event_aspect(kieker_trace_t *trace, char *operationSignature, char *classSignature) {
 
     /* only send monitoring data if MAX_CALL_DEPTH is not reached and
      * component is not excluded from monitoring

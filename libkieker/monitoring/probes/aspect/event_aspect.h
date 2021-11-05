@@ -7,8 +7,8 @@
 #include "../../controller/kieker_trace.h"
 
 void init_event_aspect();
-kieker_trace_hash_t* before_event_aspect(char *operationSignature, char *classSignature);
-void after_event_aspect(kieker_trace_hash_t *data, char *operationSignature, char *classSignature);
+kieker_trace_t* before_event_aspect(char *operationSignature, char *classSignature);
+void after_event_aspect(kieker_trace_t *data, char *operationSignature, char *classSignature);
 void deinit_event_aspect();
 
 void send_before_event(const kieker_common_record_flow_trace_operation_before_operation_event event, char* buffer);

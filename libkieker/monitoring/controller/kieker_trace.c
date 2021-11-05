@@ -7,13 +7,13 @@
 /*
  * holds the hashmap of trace data
  */
-kieker_trace_hash_t* kieker_traces = NULL;
+kieker_trace_t* kieker_traces = NULL;
 
 extern pthread_rwlock_t kieker_controller_hash_lock;
 
-void kieker_trace_create(kieker_trace_hash_t* trace, int thread_id, long long trace_id);
-kieker_trace_hash_t *kieker_trace_find(int thread_id);
-void kieker_trace_delete(kieker_trace_hash_t *data);
+void kieker_trace_create(kieker_trace_t* trace, int thread_id, long long trace_id);
+kieker_trace_t *kieker_trace_find(int thread_id);
+void kieker_trace_delete(kieker_trace_t *data);
 
 /** trace id generation */
 long long kieker_trace_get_next_id();
@@ -22,18 +22,18 @@ long long kieker_trace_get_next_id();
  * get the trace object for the current thread.
  * If the trace object does not exist, it will be created.
  */
-kieker_trace_hash_t* kieker_trace_get() {
+kieker_trace_t* kieker_trace_get() {
 	 int thread_id = (int) pthread_self();
     /* get trace data */
     int ret = pthread_rwlock_rdlock(&kieker_controller_hash_lock);
     if (ret != 0)
         KIEKER_ERROR("Could not acquire rwlock!");
-    kieker_trace_hash_t* data = kieker_trace_find(thread_id);
+    kieker_trace_t* data = kieker_trace_find(thread_id);
     pthread_rwlock_unlock(&kieker_controller_hash_lock);
 
     if (data == NULL) {
         /* create new trace data */
-        data = (kieker_trace_hash_t*) malloc(sizeof(kieker_trace_hash_t));
+        data = (kieker_trace_t*) malloc(sizeof(kieker_trace_t));
         kieker_trace_create(data, thread_id, kieker_trace_get_next_id());
 
         ret = pthread_rwlock_wrlock(&kieker_controller_hash_lock);
@@ -49,7 +49,7 @@ kieker_trace_hash_t* kieker_trace_get() {
 /*
  * removes the trace object
  */
-void kieker_trace_remove(kieker_trace_hash_t *data) {
+void kieker_trace_remove(kieker_trace_t *data) {
     int ret = pthread_rwlock_wrlock(&kieker_controller_hash_lock);
     if (ret != 0)
         KIEKER_ERROR("Could not acquire rwlock");
@@ -65,8 +65,8 @@ void kieker_trace_remove(kieker_trace_hash_t *data) {
  *
  * return the object on success, otherwise NULL
  */
-kieker_trace_hash_t *kieker_trace_find(int thread_id) {
-	kieker_trace_hash_t *data;
+kieker_trace_t *kieker_trace_find(int thread_id) {
+	kieker_trace_t *data;
 
     HASH_FIND_INT(kieker_traces, &thread_id, data);
     return data;
@@ -75,14 +75,14 @@ kieker_trace_hash_t *kieker_trace_find(int thread_id) {
 /*
  * remove trace object in hashmap
  */
-void kieker_trace_delete(kieker_trace_hash_t *data) {
+void kieker_trace_delete(kieker_trace_t *data) {
     HASH_DEL(kieker_traces, data);
 }
 
 /*
  * creates a new trace
  */
-void kieker_trace_create(kieker_trace_hash_t* trace, int thread_id, long long trace_id) {
+void kieker_trace_create(kieker_trace_t* trace, int thread_id, long long trace_id) {
     trace->trace_id = trace_id;
     trace->thread_id = thread_id,
     trace->order_index = -1;

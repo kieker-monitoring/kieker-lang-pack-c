@@ -1,11 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "../utilities/kieker_error.h"
 #include "kieker_adaptive_monitoring.h"
 
 #define MAX_NUM_FILES 200
+
+char *trim(char *s);
+unsigned long kieker_adaptive_hash(unsigned char *str);
 
 /*
  * holds all creates hash-values
@@ -64,9 +68,9 @@ int kieker_adaptive_load_exclude_file(char* fileName) {
     	trim(line);
         /* ignore command lines and empty lines */
         if (line[0] != '#' && strlen(line) > 0) {
-            printf("%s\n\twith hash: %lu\n", line, hash((unsigned char*) line));
+            printf("%s\n\twith hash: %lu\n", line, kieker_adaptive_hash((unsigned char*) line));
 
-            kieker_adaptive_function_hashes[i] = hash((unsigned char*) line);
+            kieker_adaptive_function_hashes[i] = kieker_adaptive_hash((unsigned char*) line);
 
             i++;
             if (i > MAX_NUM_FILES) {
@@ -101,7 +105,7 @@ int kieker_adaptive_load_exclude_file(char* fileName) {
  * returns true, if the given component shell be excluded of monitoring
  */
 int kieker_adaptive_is_class_excluded(char* classSignature) {
-    unsigned long l = hash((unsigned char*) classSignature);
+    unsigned long l = kieker_adaptive_hash((unsigned char*) classSignature);
     int found = (bsearch(&l, kieker_adaptive_function_hashes, kieker_adaptive_excludes_size, sizeof(unsigned long), kieker_adaptive_comp_ulong) != NULL);
 
     return (found && kieker_adaptive_mode) || (!found && !kieker_adaptive_mode);
@@ -137,3 +141,25 @@ static int kieker_adaptive_comp_ulong(const void *m1, const void *m2)
     else
         return 1;
 }
+
+
+
+char *ltrim(char *s)
+{
+    while(isspace(*s)) s++;
+    return s;
+}
+
+char *rtrim(char *s)
+{
+    char* back = s + strlen(s);
+    while(isspace(*--back));
+    *(back+1) = '\0';
+    return s;
+}
+
+char *trim(char *s)
+{
+    return rtrim(ltrim(s));
+}
+

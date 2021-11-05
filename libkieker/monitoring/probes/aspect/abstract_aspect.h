@@ -5,9 +5,9 @@
 #include "../../controller/kieker_trace.h"
 
 void init_aspect();
-kieker_trace_hash_t* before_aspect(kieker_common_record_controlflow_operation_execution_record *record);
-void after_aspect(kieker_trace_hash_t *data, kieker_common_record_controlflow_operation_execution_record* record);
-void after_aspect2(kieker_trace_hash_t *data, kieker_common_record_controlflow_operation_execution_record* record);
+kieker_trace_t* before_aspect(kieker_common_record_controlflow_operation_execution_record *record);
+void after_aspect(kieker_trace_t *data, kieker_common_record_controlflow_operation_execution_record* record);
+void after_aspect2(kieker_trace_t *data, kieker_common_record_controlflow_operation_execution_record* record);
 void deinit_aspect();
 void send_record(const kieker_common_record_controlflow_operation_execution_record* record, char* buffer);
 

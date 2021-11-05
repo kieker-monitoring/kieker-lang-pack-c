@@ -12,11 +12,11 @@ void init_aspect() {
 	kieker_controller_initialize();
 }
 
-kieker_trace_hash_t* before_aspect(kieker_common_record_controlflow_operation_execution_record* record) {
+kieker_trace_t* before_aspect(kieker_common_record_controlflow_operation_execution_record* record) {
     /* get thread unique identifier */
     int thread_id = (int) pthread_self();
 
-    kieker_trace_hash_t* trace = kieker_trace_get(thread_id);
+    kieker_trace_t* trace = kieker_trace_get(thread_id);
 
     /* increment indexes */
     trace->order_index++;
@@ -35,7 +35,7 @@ kieker_trace_hash_t* before_aspect(kieker_common_record_controlflow_operation_ex
     return trace;
 }
 
-void after_aspect(kieker_trace_hash_t *trace, kieker_common_record_controlflow_operation_execution_record *record) {
+void after_aspect(kieker_trace_t *trace, kieker_common_record_controlflow_operation_execution_record *record) {
     /* measure exit time */
     record->tout = measure_time();
 
@@ -43,7 +43,7 @@ void after_aspect(kieker_trace_hash_t *trace, kieker_common_record_controlflow_o
     trace->stack--;
 }
 
-void after_aspect2(kieker_trace_hash_t *trace, kieker_common_record_controlflow_operation_execution_record *record) {
+void after_aspect2(kieker_trace_t *trace, kieker_common_record_controlflow_operation_execution_record *record) {
     send_record(record, trace->buffer);
 
     /* detect end of trace */
