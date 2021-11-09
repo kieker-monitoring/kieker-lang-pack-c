@@ -113,16 +113,16 @@ void kieker_controller_register_event_types(const char *filename) {
 	if (access(filename, F_OK) == 0) {
 		FILE fin;
 		const char read_buffer[1024];
-		if ((fin = fopen(filename,"r"))) {
+		if ((fin = fopen(filename, "r"))) {
 			while (getline(read_buffer, 1023, fin) != -1) {
-				char ch = read_buffer[strlen(read_buffer)-1];
+				char ch = read_buffer[strlen(read_buffer) - 1];
 				while (ch == '\r' || ch == '\n') {
-					read_buffer[strlen(read_buffer)-1] = 0;
-					ch = read_buffer[strlen(read_buffer)-1];
+					read_buffer[strlen(read_buffer) - 1] = 0;
+					ch = read_buffer[strlen(read_buffer) - 1];
 				}
 				// TODO use trim here
-				kieker_offset += kieker_serialize_string(kieker_controller_buffer,
-								kieker_offset, read_buffer);
+				kieker_offset += kieker_serialize_string(
+						kieker_controller_buffer, kieker_offset, read_buffer);
 			}
 		}
 	} else {
@@ -275,10 +275,11 @@ int kieker_monitoring_controller_prefix_serialize(int id, int offset) {
 }
 
 void kieker_controller_print_configuration(const char *hostname,
-		unsigned short port) {
+		unsigned short port, const char *event_type_filename) {
 	fprintf(stdout, "Kieker Configuration\n");
 	fprintf(stdout, "\tcollector hostname = %s\n", hostname);
 	fprintf(stdout, "\tcollector port = %d\n", port);
+	fprintf(stdout, "\tevent type registrytion file = %s\n", event_type_filename);
 }
 
 void kieker_controller_finalize() {
