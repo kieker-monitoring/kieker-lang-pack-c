@@ -2,6 +2,12 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.69)
 AC_INIT(kieker-lang-pack-c, 1.0)
+AC_CONFIG_AUX_DIR(autotools)
+AC_CONFIG_MACRO_DIR(m4)
+
+AM_PROG_AR
+ 
+: ${CFLAGS="-O3 -Wall -Wextra -Wpedantic -std=c11"}
 AC_PROG_CC
 
 AC_CONFIG_MACRO_DIRS([m4])
@@ -9,7 +15,7 @@ AC_CONFIG_MACRO_DIRS([m4])
 AC_CANONICAL_SYSTEM
 
 dnl Initialize automake
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE([1.16 subdir-objects -Wall -Werror no-define])
 
 dnl this allows us specify individual liking flags for each target
 AM_PROG_CC_C_O
@@ -50,6 +56,7 @@ libkieker/monitoring/probes/Makefile
 libkieker/monitoring/probes/aspect/Makefile
 libkieker/monitoring/utilities/Makefile
 libkieker/Makefile
-libkieker/include/Makefile)
+libkieker/include/Makefile
+tests/Makefile)
 
 AC_OUTPUT

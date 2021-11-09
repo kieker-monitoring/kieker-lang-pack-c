@@ -8,7 +8,7 @@
 
 #define MAX_NUM_FILES 200
 
-char *trim(char *s);
+char *kieker_adaptive_trim(char *s);
 unsigned long kieker_adaptive_hash(unsigned char *str);
 
 /*
@@ -52,7 +52,7 @@ int kieker_adaptive_load_exclude_file(char* fileName) {
         return -2;
     }
     /* remove \n at the end of string */
-    if (line[read - 1] == '\n') trim(line);
+    if (line[read - 1] == '\n') kieker_adaptive_trim(line);
 
     if (strcmp(line, "EXCLUDE") == 0) {
         kieker_adaptive_mode = 1;
@@ -65,7 +65,7 @@ int kieker_adaptive_load_exclude_file(char* fileName) {
 
     /* read component list line by line */
     while ((read = getline(&line, &len, f)) != -1) {
-    	trim(line);
+    	kieker_adaptive_trim(line);
         /* ignore command lines and empty lines */
         if (line[0] != '#' && strlen(line) > 0) {
             printf("%s\n\twith hash: %lu\n", line, kieker_adaptive_hash((unsigned char*) line));
@@ -144,13 +144,13 @@ static int kieker_adaptive_comp_ulong(const void *m1, const void *m2)
 
 
 
-char *ltrim(char *s)
+char *kieker_adaptive_ltrim(char *s)
 {
     while(isspace(*s)) s++;
     return s;
 }
 
-char *rtrim(char *s)
+char *kieker_adaptive_rtrim(char *s)
 {
     char* back = s + strlen(s);
     while(isspace(*--back));
@@ -158,8 +158,8 @@ char *rtrim(char *s)
     return s;
 }
 
-char *trim(char *s)
+char *kieker_adaptive_trim(char *s)
 {
-    return rtrim(ltrim(s));
+    return kieker_adaptive_rtrim(kieker_adaptive_ltrim(s));
 }
 
