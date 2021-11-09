@@ -70,27 +70,19 @@ void kieker_controller_initialize() {
 				"localhost");
 		unsigned short port = kieker_controller_getenv_ushort("KIEKER_PORT",
 				5678);
+		const char *register_event_types_filename =
+				kieker_controller_getenv_string("KIEKER_EVENT_TYPE_FILE",
+						"~/kieker-event-type-file");
+
 		kieker_offset = 0;
 		kieker_controller_buffer = malloc(8192 * sizeof(char));
 		kieker_controller_string_buffer = malloc(8192 * sizeof(char));
 
-    	kieker_trace_init_id();
+		kieker_trace_init_id();
 
 		if ((kieker_socket = kieker_io_client_socket_open(host, port)) != -1) {
-			// TODO this must loop over a record registration file
-			kieker_offset += kieker_serialize_string(kieker_controller_buffer,
-					kieker_offset,
-					"kieker.common.record.flow.trace.TraceMetadata");
-			kieker_offset +=
-					kieker_serialize_string(kieker_controller_buffer,
-							kieker_offset,
-							"kieker.common.record.flow.trace.operation.BeforeOperationEvent");
-			kieker_offset +=
-					kieker_serialize_string(kieker_controller_buffer,
-							kieker_offset,
-							"kieker.common.record.flow.trace.operation.AfterOperationEvent");
-
-			kieker_offset = 0;
+			kieker_controller_register_event_types(
+					register_event_types_filename);
 
 			kieker_hostname = malloc(200);
 			if (gethostname(kieker_hostname, 199) == -1) {
@@ -99,7 +91,8 @@ void kieker_controller_initialize() {
 						strerror(kieker_error));
 				kieker_hostname = "<failed>";
 			}
-			kieker_controller_print_configuration(host, port);
+			kieker_controller_print_configuration(host, port,
+					register_event_types_filename);
 			int error_code = atexit(kieker_controller_finalize);
 			if (error_code != 0) {
 				fprintf(stderr, "Cannot set exit function.\n");
@@ -111,6 +104,39 @@ void kieker_controller_initialize() {
 			kieker_init_state = FAILED;
 		}
 	}
+}
+
+/*
+ * Read a file in to configure register all event types we intend to use in the analysis.
+ */
+void kieker_controller_register_event_types(const char *filename) {
+	if (access(filename, F_OK) == 0) {
+		FILE fin;
+		const char read_buffer[1024];
+		if ((fin = fopen(filename,"r"))) {
+			while (getline(read_buffer, 1023, fin) != -1) {
+				char ch = read_buffer[strlen(read_buffer)-1];
+				while (ch == '\r' || ch == '\n') {
+					read_buffer[strlen(read_buffer)-1] = 0;
+					ch = read_buffer[strlen(read_buffer)-1];
+				}
+				// TODO use trim here
+				kieker_offset += kieker_serialize_string(kieker_controller_buffer,
+								kieker_offset, read_buffer);
+			}
+		}
+	} else {
+		// assume minimal trace setup.
+		kieker_offset += kieker_serialize_string(kieker_controller_buffer,
+				kieker_offset, "kieker.common.record.flow.trace.TraceMetadata");
+		kieker_offset +=
+				kieker_serialize_string(kieker_controller_buffer, kieker_offset,
+						"kieker.common.record.flow.trace.operation.BeforeOperationEvent");
+		kieker_offset +=
+				kieker_serialize_string(kieker_controller_buffer, kieker_offset,
+						"kieker.common.record.flow.trace.operation.AfterOperationEvent");
+	}
+	kieker_offset = 0;
 }
 
 /*
@@ -171,7 +197,8 @@ void kieker_controller_send_string(const char *string, int id) {
 	kieker_serialize_int32(kieker_controller_string_buffer, 8, length);
 	strncpy(kieker_controller_string_buffer + 4 + 4 + 4, string, length);
 
-	if (write(kieker_socket, kieker_controller_string_buffer, length + 4 + 4 + 4) == -1) {
+	if (write(kieker_socket, kieker_controller_string_buffer,
+			length + 4 + 4 + 4) == -1) {
 		kieker_error = errno;
 		fprintf(stderr, "Write failure sending initial strings: %s\n",
 				strerror(kieker_error));
@@ -256,6 +283,6 @@ void kieker_controller_print_configuration(const char *hostname,
 
 void kieker_controller_finalize() {
 	kieker_io_socket_close(kieker_socket);
-    pthread_rwlock_destroy(&kieker_controller_hash_lock);
-    kieker_init_state = UNCONFIGURED;
+	pthread_rwlock_destroy(&kieker_controller_hash_lock);
+	kieker_init_state = UNCONFIGURED;
 }
