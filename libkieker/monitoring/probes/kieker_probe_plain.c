@@ -34,7 +34,7 @@ void kieker_probe_before_operation_record(const char* class_signature, const cha
 		trace_metadata.parentOrderId = 0;
 		trace_metadata.parentTraceId = -1;
 
-		position = kieker_monitoring_controller_prefix_serialize(KIEKER_FLOW_TRACE_METADATA, position);
+		position = kieker_controller_prefix_serialize(KIEKER_FLOW_TRACE_METADATA, position);
 		position = kieker_common_record_flow_trace_trace_metadata_serialize(kieker_controller_get_buffer(), position, trace_metadata);
 	}
 
@@ -47,7 +47,7 @@ void kieker_probe_before_operation_record(const char* class_signature, const cha
 	entry->order_index++;
 	entry->stack++;
 
-	position = kieker_monitoring_controller_prefix_serialize(KIEKER_FLOW_BEFORE_OPERATION, position);
+	position = kieker_controller_prefix_serialize(KIEKER_FLOW_BEFORE_OPERATION, position);
 	position = kieker_common_record_flow_trace_operation_before_operation_event_serialize(kieker_controller_get_buffer(), position, event);
 
 	kieker_controller_send(position);
@@ -67,7 +67,7 @@ void kieker_probe_after_operation_record(const char* class_signature, const char
 	entry->order_index++;
 	entry->stack--;
 
-	int position = kieker_monitoring_controller_prefix_serialize(KIEKER_FLOW_AFTER_OPERATION, position);
+	int position = kieker_controller_prefix_serialize(KIEKER_FLOW_AFTER_OPERATION, position);
 	position = kieker_common_record_flow_trace_operation_after_operation_event_serialize(kieker_controller_get_buffer(), position, event);
 
 	kieker_controller_send(position);

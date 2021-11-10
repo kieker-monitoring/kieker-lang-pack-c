@@ -23,6 +23,8 @@ long long kieker_controller_get_time_ms();
  */
 const char* kieker_controller_get_hostname();
 
+pthread_rwlock_t kieker_controller_access_lock();
+
 /*
  * Return the buffer.
  */
@@ -55,6 +57,6 @@ void kieker_controller_send(int length);
  * id = id of the record type.
  * offset = offset in the buffer
  */
-int kieker_monitoring_controller_prefix_serialize(int id, int offset);
+int kieker_controller_prefix_serialize(int id, int offset);
 
 #endif /* LIBKIEKER_MONITORING_CONTROLLER_KIEKER_CONTROLLER_H_ */

@@ -8,7 +8,6 @@
 
 #define MAX_NUM_FILES 200
 
-char *kieker_adaptive_trim(char *s);
 unsigned long kieker_adaptive_hash(unsigned char *str);
 
 /*
@@ -36,7 +35,7 @@ int kieker_adaptive_load_exclude_file(char* fileName) {
     FILE* f = fopen(fileName, "r");
 
     if (f == NULL) {
-        KIEKER_ERROR("Could not open file!");
+    	KIEKER_ERROR_PLAIN("Could not open file!");
         return -1;
     }
 
@@ -48,33 +47,33 @@ int kieker_adaptive_load_exclude_file(char* fileName) {
     /* read first line to determine the type of the list */
     read = getline(&line, &len, f);
     if (read == -1) {
-        KIEKER_ERROR("file is empty!");
+    	KIEKER_ERROR_PLAIN("file is empty.");
         return -2;
     }
     /* remove \n at the end of string */
-    if (line[read - 1] == '\n') kieker_adaptive_trim(line);
+    if (line[read - 1] == '\n') kieker_string_trim(line);
 
     if (strcmp(line, "EXCLUDE") == 0) {
         kieker_adaptive_mode = 1;
     } else if (strcmp(line, "INCLUDE") == 0) {
         kieker_adaptive_mode = 0;
     } else {
-        KIEKER_ERROR("wrong fileheader!");
+        KIEKER_ERROR_PLAIN("wrong fileheader.");
         return -3;
     }
 
     /* read component list line by line */
     while ((read = getline(&line, &len, f)) != -1) {
-    	kieker_adaptive_trim(line);
+    	kieker_string_trim(line);
         /* ignore command lines and empty lines */
         if (line[0] != '#' && strlen(line) > 0) {
-            printf("%s\n\twith hash: %lu\n", line, kieker_adaptive_hash((unsigned char*) line));
+            fprintf(stderr, "%s\n\twith hash: %lu\n", line, kieker_adaptive_hash((unsigned char*) line));
 
             kieker_adaptive_function_hashes[i] = kieker_adaptive_hash((unsigned char*) line);
 
             i++;
             if (i > MAX_NUM_FILES) {
-                KIEKER_ERROR("Not enouth space to store all exclude classes!");
+            	KIEKER_ERROR_PLAIN("Not enouth space to store all exclude classes!");
                 return -4;
             }
         }
@@ -93,7 +92,7 @@ int kieker_adaptive_load_exclude_file(char* fileName) {
     int j;
     for (j = 0; j < kieker_adaptive_excludes_size - 1; j++) {
         if (kieker_adaptive_function_hashes[j] == kieker_adaptive_function_hashes[j + 1]) {
-            KIEKER_ERROR("Two strings have equal hash value!");
+        	KIEKER_ERROR_PLAIN("Two strings have equal hash value!");
             return -5;
         }
     }
@@ -141,25 +140,3 @@ static int kieker_adaptive_comp_ulong(const void *m1, const void *m2)
     else
         return 1;
 }
-
-
-
-char *kieker_adaptive_ltrim(char *s)
-{
-    while(isspace(*s)) s++;
-    return s;
-}
-
-char *kieker_adaptive_rtrim(char *s)
-{
-    char* back = s + strlen(s);
-    while(isspace(*--back));
-    *(back+1) = '\0';
-    return s;
-}
-
-char *kieker_adaptive_trim(char *s)
-{
-    return kieker_adaptive_rtrim(kieker_adaptive_ltrim(s));
-}
-

@@ -13,7 +13,7 @@ long long kieker_trace_get_next_id();
 /** -- tests -- */
 
 void test_kieker_trace_init_id() {
-	kieker_trace_init_id();
+	kieker_trace_init();
 	long long id = kieker_trace_current_id;
 	long long next_id = kieker_trace_get_next_id();
 	long long next2_id = kieker_trace_get_next_id();
@@ -22,7 +22,7 @@ void test_kieker_trace_init_id() {
 }
 
 void test_kieker_trace_get() {
-	kieker_trace_init_id();
+	kieker_trace_init();
 	long long id = kieker_trace_current_id;
 	kieker_trace_t* trace = kieker_trace_get();
 

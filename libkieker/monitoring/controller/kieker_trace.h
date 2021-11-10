@@ -15,7 +15,9 @@ typedef struct kieker_trace_hash {
     UT_hash_handle hh;
 } kieker_trace_t;
 
-void kieker_trace_init_id();
+int kieker_trace_init();
+
+void kieker_trace_finalize();
 
 /**
  * Get the current thread or return a new one.

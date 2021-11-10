@@ -3,12 +3,10 @@
 
 #include <stdio.h>
 
-#define ANSI_COLOR_RED     "\x1b[31m"
-#define ANSI_COLOR_RESET   "\x1b[0m"
+void kieker_error_print(char* file, int line, char* error_message, ...);
 
-void kieker_print_error(char* error_message, char* file, int line);
+#define KIEKER_ERROR_PLAIN(s) fprintf(stderr, "%s:%d %s\n", __FILE__, __LINE__,s)
 
-#define KIEKER_ERROR(s) \
-    kieker_print_error(s, __FILE__, __LINE__)
-	
+#define KIEKER_ERROR(s, ...) fprintf(stderr, "%s:%d", __FILE__, __LINE__); fprintf(stderr, s, __VA_ARGS__)
+
 #endif
