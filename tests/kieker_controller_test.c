@@ -4,25 +4,30 @@
 #include <cmocka.h>
 #include <stdio.h>
 
-#include <kieker_controller.h>
+#include "kieker_controller_internal.h"
 
-void kieker_controller_configure_variables();
-void kieker_controller_setup_buffer();
-int kieker_controller_obtain_local_hostname();
+extern kieker_controller_state_t kieker_controller;
 
 /** Declare internal functions necessary for the test. */
 
 /** -- tests -- */
 void test_kieker_controller_configure_variables() {
 	kieker_controller_configure_variables();
+	assert_string_equal(kieker_controller.remote_hostname, KIEKER_DEFAULT_REMOTE_HOSTNAME);
+	assert_int_equal(kieker_controller.remote_port, KIEKER_DEFAULT_REMOTE_PORT);
+	assert_string_equal(kieker_controller.event_types_filename, KIEKER_DEFAULT_EVENT_TYPE_FILENAME);
 }
 
 void test_kieker_controller_setup_buffer() {
-		kieker_controller_setup_buffer();
+	kieker_controller_setup_buffer();
+	assert_non_null(kieker_controller.buffer);
 }
 
 void test_kieker_controller_obtain_local_hostname() {
-	kieker_controller_obtain_local_hostname();
+	if (kieker_controller_obtain_local_hostname())
+		assert_non_null(kieker_controller.local_hostname);
+	else
+		assert_string_equal(kieker_controller.local_hostname, "<failed>");
 }
 
 
