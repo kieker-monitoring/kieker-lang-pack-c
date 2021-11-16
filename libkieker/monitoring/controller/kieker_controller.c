@@ -30,8 +30,7 @@
 #include <limits.h>
 #include "kieker_controller_internal.h"
 
-kieker_controller_state_t kieker_controller = { 0, 0, 0, UNCONFIGURED, NULL,
-		NULL, NULL, NULL, 0, NULL };
+kieker_controller_state_t kieker_controller = { 0, 0, 0, UNCONFIGURED, NULL, NULL, NULL, NULL, 0, };
 
 /*
  * Initialize the kieker controller.
@@ -41,8 +40,7 @@ void kieker_controller_initialize() {
 		kieker_controller_configure_variables();
 		kieker_controller_setup_buffer();
 		if (kieker_controller_obtain_local_hostname()) {
-			kieker_controller_register_event_types(
-					kieker_controller.event_types_filename);
+			kieker_controller_register_event_types();
 
 			if (kieker_trace_init()) {
 				kieker_controller_connect();
@@ -80,8 +78,6 @@ void kieker_controller_configure_variables() {
 			"KIEKER_HOSTNAME", KIEKER_DEFAULT_REMOTE_HOSTNAME);
 	kieker_controller.remote_port = kieker_controller_getenv_ushort(
 			"KIEKER_PORT", KIEKER_DEFAULT_REMOTE_PORT);
-	kieker_controller.event_types_filename = kieker_controller_getenv_string(
-			"KIEKER_EVENT_TYPE_FILE", KIEKER_DEFAULT_EVENT_TYPE_FILENAME);
 }
 
 void kieker_controller_setup_buffer() {
@@ -103,39 +99,20 @@ int kieker_controller_obtain_local_hostname() {
 }
 
 /*
- * Read a file in to configure register all event types we intend to use in the analysis.
+ * Register basic record types.
  */
-void kieker_controller_register_event_types(const char *filename) {
-	if (access(filename, F_OK) == 0) {
-		FILE *fin;
-		char *read_buffer = malloc(1024);
-		if ((fin = fopen(filename, "r"))) {
-			while (fgets(read_buffer, 1023, fin) != NULL) {
-				char ch = read_buffer[strlen(read_buffer) - 1];
-				while (ch == '\r' || ch == '\n') {
-					read_buffer[strlen(read_buffer) - 1] = 0;
-					ch = read_buffer[strlen(read_buffer) - 1];
-				}
-				kieker_controller.offset += kieker_serialize_string(
-						kieker_string_trim(kieker_controller.buffer),
-						kieker_controller.offset, read_buffer);
-			}
-		}
-		free(read_buffer);
-	} else {
-		// assume minimal trace setup.
-		kieker_controller.offset += kieker_serialize_string(
-				kieker_controller.buffer, kieker_controller.offset,
-				"kieker.common.record.flow.trace.TraceMetadata");
-		kieker_controller.offset +=
-				kieker_serialize_string(kieker_controller.buffer,
-						kieker_controller.offset,
-						"kieker.common.record.flow.trace.operation.BeforeOperationEvent");
-		kieker_controller.offset +=
-				kieker_serialize_string(kieker_controller.buffer,
-						kieker_controller.offset,
-						"kieker.common.record.flow.trace.operation.AfterOperationEvent");
-	}
+void kieker_controller_register_event_types() {
+	// assume minimal trace setup.
+	kieker_controller.offset += kieker_serialize_string(
+			kieker_controller.buffer, kieker_controller.offset,
+			"kieker.common.record.flow.trace.TraceMetadata");
+	kieker_controller.offset += kieker_serialize_string(
+			kieker_controller.buffer, kieker_controller.offset,
+			"kieker.common.record.flow.trace.operation.BeforeOperationEvent");
+	kieker_controller.offset += kieker_serialize_string(
+			kieker_controller.buffer, kieker_controller.offset,
+			"kieker.common.record.flow.trace.operation.AfterOperationEvent");
+
 	kieker_controller.offset = 0;
 }
 
@@ -276,8 +253,6 @@ void kieker_controller_print_configuration() {
 	fprintf(stdout, "\tcollector hostname = %s\n",
 			kieker_controller.remote_hostname);
 	fprintf(stdout, "\tcollector port = %d\n", kieker_controller.remote_port);
-	fprintf(stdout, "\tevent type registration file = %s\n",
-			kieker_controller.event_types_filename);
 }
 
 void kieker_controller_finalize() {

@@ -1,4 +1,4 @@
-#include "event_trace_kirat_abstract.ah"
+#include "../../../include/aspectc++/abstract_trace_kirat.ah"
 
 aspect TraceTotalProcess : public KiratAbstractTrace {
 	pointcut monitoringPC() = execution("% ...::%Process(...)") && kirat_exclude();	

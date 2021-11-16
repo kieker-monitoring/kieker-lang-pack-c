@@ -4,9 +4,9 @@ Please note: This language pack is in an early stage of development.
 
 ## AspectC++ AOP
 
-There is initial code using aspectC++ for instrumentation. This is not yet
-included in the code based of the kieker library. However, we will merge
-both code bases.
+There is initial code using aspectC++ for instrumentation. We have incorporated
+that code in the source tree. You may find the aspect definitions under
+`libkieker/include/aspectc++`. However, we have not yet tested them.
 
 ## Before Compiling
 

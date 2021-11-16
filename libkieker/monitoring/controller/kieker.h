@@ -5,8 +5,8 @@
 extern "C"{
 #endif
 
-#include "../../libkieker/monitoring/probes/aspect/abstract_aspect.h"
-#include "../../libkieker/monitoring/probes/aspect/event_aspect.h"
+#include "../probes/aspect/controlflow.h"
+#include "../probes/aspect/event_trace.h"
 
 #ifdef __cplusplus
 }

@@ -9,70 +9,37 @@
 
 #include <stdio.h>
 #include <kieker_controller.h>
+#include "kieker_probe_events.h"
 
-#include "../../common/record/flow/trace/operation/before_operation_event.h"
-#include "../../common/record/flow/trace/operation/after_operation_event.h"
-#include "../../common/record/flow/trace/trace_metadata.h"
-#include "../controller/kieker_trace.h"
-
-
-void kieker_probe_before_operation_record(const char* class_signature, const char* operation_signature) {
-	kieker_common_record_flow_trace_operation_before_operation_event event;
+void kieker_probe_before_operation_event(const char* class_signature, const char* operation_signature) {
 	int position = 0;
 
-	kieker_trace_t* entry = kieker_trace_get();
+	kieker_trace_t* trace = kieker_trace_get();
 
-	if (entry->order_index == 0) { // new thread
-		kieker_common_record_flow_trace_trace_metadata trace_metadata;
-
-		trace_metadata.hostname = kieker_controller_get_hostname();
-		trace_metadata.nextOrderId = 1;
-		trace_metadata.parentOrderId = 0;
-		trace_metadata.sessionId = "<no-session>";
-		trace_metadata.threadId = entry->thread_id;
-		trace_metadata.traceId = entry->trace_id;
-		trace_metadata.parentOrderId = 0;
-		trace_metadata.parentTraceId = -1;
-
-		position = kieker_controller_prefix_serialize(KIEKER_FLOW_TRACE_METADATA, position);
-		position = kieker_common_record_flow_trace_trace_metadata_serialize(kieker_controller_get_buffer(), position, trace_metadata);
+	if (trace->order_index == -1) { // new thread
+		position = kieker_probe_create_trace_metadata(position, trace);
 	}
 
-	event.timestamp = kieker_controller_get_time_ms();
-	event.traceId = entry->trace_id;
-	event.classSignature = class_signature;
-	event.operationSignature = operation_signature;
-	event.orderIndex = entry->order_index;
+	trace->order_index++;
+	trace->stack++;
 
-	entry->order_index++;
-	entry->stack++;
-
-	position = kieker_controller_prefix_serialize(KIEKER_FLOW_BEFORE_OPERATION, position);
-	position = kieker_common_record_flow_trace_operation_before_operation_event_serialize(kieker_controller_get_buffer(), position, event);
+	position = kieker_probe_create_before_operation_event(position, trace, class_signature, operation_signature);
 
 	kieker_controller_send(position);
 }
 
-void kieker_probe_after_operation_record(const char* class_signature, const char* operation_signature) {
-	kieker_common_record_flow_trace_operation_after_operation_event event;
+void kieker_probe_after_operation_event(const char* class_signature, const char* operation_signature) {
+	kieker_trace_t* trace = kieker_trace_get();
 
-	kieker_trace_t* entry = kieker_trace_get();
+	int position = 0;
+	position = kieker_probe_create_after_operation_event(position, trace, class_signature ,operation_signature);
 
-	event.timestamp = kieker_controller_get_time_ms();
-	event.traceId = entry->trace_id;
-	event.classSignature = class_signature;
-	event.operationSignature = operation_signature;
-	event.orderIndex = entry->order_index;
-
-	entry->order_index++;
-	entry->stack--;
-
-	int position = kieker_controller_prefix_serialize(KIEKER_FLOW_AFTER_OPERATION, position);
-	position = kieker_common_record_flow_trace_operation_after_operation_event_serialize(kieker_controller_get_buffer(), position, event);
+	trace->order_index++;
+	trace->stack--;
 
 	kieker_controller_send(position);
 
-	if (entry->stack == 0) {
-		kieker_trace_remove(entry);
+	if (trace->stack == 0) {
+		kieker_trace_remove(trace);
 	}
 }

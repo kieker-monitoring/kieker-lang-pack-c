@@ -6,10 +6,10 @@ long long fact(long long n);
 int main (int argc, char** argv) {
 	printf("Hello World\n");
 
-	kieker_probe_before_operation_record("class", "function");
-	kieker_probe_after_operation_record("class", "function");
-	kieker_probe_before_operation_record("class", "function");
-	kieker_probe_after_operation_record("class", "function");
+	kieker_probe_before_operation_event("class", "function");
+	kieker_probe_after_operation_event("class", "function");
+	kieker_probe_before_operation_event("class", "function");
+	kieker_probe_after_operation_event("class", "function");
 
 
 	long long n = 10;

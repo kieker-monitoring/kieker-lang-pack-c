@@ -6,7 +6,7 @@ noinst_LTLIBRARIES = libprobes.la
 # Build information for each library
 
 # Sources for libkieker
-libprobes_la_SOURCES = kieker_probe_gcc_profiling.c kieker_probe_plain.c
+libprobes_la_SOURCES = kieker_probe_gcc_profiling.c kieker_probe_plain.c kieker_probe_events.c
 
 # Linker options libTestProgram
 libprobes_la_LDFLAGS =

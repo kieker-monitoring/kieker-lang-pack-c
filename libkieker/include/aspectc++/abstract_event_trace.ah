@@ -1,0 +1,42 @@
+#ifndef KIEKER_PROBES_ASPECT_EVENT_MONITORING_H
+#define KIEKER_PROBES_ASPECT_EVENT_MONITORING_H
+
+#include <string>
+#include <algorithm>
+
+#include <kieker.h>
+#include "../../monitoring/probes/aspect/event_trace.h"
+#include "../../monitoring/controller/kieker_trace.h"
+
+aspect monitoringAspect {
+
+    public:
+    pointcut virtual monitoringPC() = 0;
+
+    monitoringAspect() {
+    	kieker_probe_aspect_event_initialize();
+    }
+
+    advice monitoringPC() : around() {
+        std::string sig = JoinPoint::signature();
+        char* operation_signature = (char*) sig.c_str();
+
+        std::string file = JoinPoint::filename();
+
+        /* remove file extention */
+        std::string name = file.substr(0, file.find_last_of("."));
+
+        /* replace '/' with '.' to use file path as package structure */
+        std::replace(name.begin(), name.end(), '/', '.');
+
+        char* class_signature = (char*) name.c_str();
+
+        kieker_trace_t* data = kieker_probe_aspect_event_before_operation(operation_signature, class_signature);
+
+        tjp->proceed();
+
+        kieker_probe_aspect_event_after_operation(data, operation_signature, class_signature);
+    }
+};
+
+#endif

@@ -4,6 +4,9 @@
 #include <string>
 
 #include <kieker.h>
+#include "../kieker_probe_events.h"
+#include "../../controller/kieker_trace.h"
+#include "controlflow.h"
 
 aspect monitoringAspect {
 
@@ -19,32 +22,30 @@ aspect monitoringAspect {
     //pointcut monitoringPC() = includePC() && !excludePC();
 
     monitoringAspect() {
-        init_aspect();
+    	kieker_probe_aspect_controlflow_initialize();
     }
 
     advice monitoringPC() : around() {
         OperationExecutionRecord record;
-        trace_hash_t* data;
-        char *operationSignature;
+        kieker_trace_t* trace;
 
-        data = before_aspect(&record);
+        trace = kieker_probe_aspect_controlflow_before(&record);
 
         tjp->proceed();
 
-        after_aspect(data, &record);
+        kieker_probe_aspect_controlflow_after(trace, &record);
 
         std::string file = JoinPoint::filename();
         std::string sig = JoinPoint::signature();
-        std::string opsig;
+        std::string operation_signature;
 
         std::string name = file.substr(0, file.find_last_of("."));
-        opsig = name.append("::").append(sig);
-        operationSignature = (char*) opsig.c_str();
+        operation_signature = name.append("::").append(sig);
 
         // send data
-        record.operationSignature = operationSignature;
+        record.operation_signature = (char*) opsig.c_str();
 
-        after_aspect2(data, &record);
+        kieker_probe_aspect_controlflow_after2(data, &record);
     }
 };
 

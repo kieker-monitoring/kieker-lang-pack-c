@@ -19,7 +19,6 @@ typedef struct kieker_controller_state {
 	char *local_hostname;
 	const char *remote_hostname;
 	unsigned short remote_port;
-	const char *event_types_filename;
 } kieker_controller_state_t;
 
 /**
@@ -43,7 +42,7 @@ void kieker_controller_connect();
 /*
  * Read a file in to configure register all event types we intend to use in the analysis.
  */
-void kieker_controller_register_event_types(const char *filename);
+void kieker_controller_register_event_types();
 
 /**
  * Print out the configuration used for Kieker.

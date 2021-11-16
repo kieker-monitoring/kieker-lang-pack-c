@@ -13,9 +13,9 @@
 #include <kieker_controller.h>
 
 void __cyg_profile_func_enter(void *this_fn, void *call_site) {
-	kieker_probe_before_operation_record("<package structure>", kieker_controller_get_operation_fqn(this_fn));
+	kieker_probe_before_operation_event("<package structure>", kieker_controller_get_operation_fqn(this_fn));
 }
 
 void __cyg_profile_func_exit(void *this_fn, void *call_site) {
-	kieker_probe_after_operation_record("<package structure>", kieker_controller_get_operation_fqn(this_fn));
+	kieker_probe_after_operation_event("<package structure>", kieker_controller_get_operation_fqn(this_fn));
 }

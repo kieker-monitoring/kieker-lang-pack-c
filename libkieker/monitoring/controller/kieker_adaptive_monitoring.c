@@ -4,6 +4,8 @@
 #include <ctype.h>
 
 #include "../utilities/kieker_error.h"
+#include "../utilities/kieker_string.h"
+
 #include "kieker_adaptive_monitoring.h"
 
 #define MAX_NUM_FILES 200
@@ -80,7 +82,7 @@ int kieker_adaptive_load_exclude_file(char* fileName) {
     }
 
     free(line);
-    printf("%i exclude classes found!\n", i);
+    fprintf(stdout,"%i exclude classes found!\n", i);
 
     fclose(f);
 

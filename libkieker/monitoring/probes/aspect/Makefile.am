@@ -4,7 +4,7 @@ noinst_LTLIBRARIES = libaspect.la
 # Build information for each library
 
 # Sources for libkieker
-libaspect_la_SOURCES = abstract_aspect.c event_aspect.c
+libaspect_la_SOURCES = controlflow.c event_trace.c
 
 # Linker options libTestProgram
 libaspect_la_LDFLAGS = -lbfd
