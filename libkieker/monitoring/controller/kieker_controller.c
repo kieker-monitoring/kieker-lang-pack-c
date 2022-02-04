@@ -32,6 +32,13 @@
 
 kieker_controller_state_t kieker_controller = { 0, 0, 0, UNCONFIGURED, NULL, NULL, NULL, NULL, 0, };
 
+__attribute__((constructor)) void init(void) {
+	kieker_controller_initialize();
+}
+__attribute__((destructor))  void fini(void) {
+	kieker_controller_finalize();
+}
+
 /*
  * Initialize the kieker controller.
  */
@@ -40,10 +47,9 @@ void kieker_controller_initialize() {
 		kieker_controller_configure_variables();
 		kieker_controller_setup_buffer();
 		if (kieker_controller_obtain_local_hostname()) {
-			kieker_controller_register_event_types();
-
 			if (kieker_trace_init()) {
 				kieker_controller_connect();
+				kieker_controller_register_event_types();
 			} else {
 				kieker_controller.init_state = FAILED;
 			}

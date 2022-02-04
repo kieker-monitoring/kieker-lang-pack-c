@@ -9,7 +9,7 @@ noinst_LTLIBRARIES = libprobes.la
 libprobes_la_SOURCES = kieker_probe_gcc_profiling.c kieker_probe_plain.c kieker_probe_events.c
 
 # Linker options libTestProgram
-libprobes_la_LDFLAGS =
+libprobes_la_LDFLAGS = 
 
 # Compiler options. Here we are adding the include directory
 # to be searched for headers included in the source code.
