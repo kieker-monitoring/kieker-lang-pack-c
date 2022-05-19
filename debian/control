@@ -1,0 +1,14 @@
+Source: kieker-lang-pack-c
+Maintainer: Reiner Jung <reiner.jung@email.uni-kiel.de>
+Section: misc
+Priority: optional
+Standards-Version: 1.0.0
+Build-Depends: debhelper (>= 9)
+
+Package: kieker-lang-pack-c
+Architecture: amd64
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: instrumenting native applications
+ The Kieker Language Pack for C and other languages that compile to native code allows
+ to instrument software among other options during compilation by utilizing compiler
+ features.
