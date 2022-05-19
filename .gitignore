@@ -25,6 +25,7 @@ autom4te.cache
 /install-sh
 /missing
 /stamp-h1
+/libtool
 
 # https://www.gnu.org/software/libtool/
 
@@ -55,3 +56,14 @@ makefile.in
 **/*.la
 **/*.lo
 **/*.o
+
+# additional exclusions
+.autotools
+.cproject
+.project
+.settings/
+autotools/
+examples/basic-example/basic
+examples/bfd/bfd
+examples/instrument-example/instrument
+
