@@ -46,7 +46,8 @@ find "${DEBIAN_STAGING}" -name '.deps' -exec rm -rf {} \;
 find "${DEBIAN_STAGING}" -name '*.o' -exec rm {} \;
 find "${DEBIAN_STAGING}" -name '*.lo' -exec rm {} \;
 find "${DEBIAN_STAGING}" -name '*.la' -exec rm {} \;
-rm -rf "${DEBIAN_STAGING_SOURCE}/autom4te.cache" "${DEBIAN_STAGING_SOURCE}/m4" "${DEBIAN_STAGING_SOURCE}/autotools"
+rm -rf "${DEBIAN_STAGING_SOURCE}/autom4te.cache"
+# "${DEBIAN_STAGING_SOURCE}/m4" "${DEBIAN_STAGING_SOURCE}/autotools"
 
 tar -czpf "kieker-lang-pack-c_${VERSION}.orig.tar.gz" kieker-lang-pack-c
 
