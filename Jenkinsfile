@@ -51,8 +51,10 @@ pipeline {
 
         stage('Compile') {
           steps {
-            sh './configure'
-            sh 'make'
+            dir('source') {
+              sh './configure'
+              sh 'make'
+            }
           }
         }
 
@@ -64,7 +66,9 @@ pipeline {
         
         stage('Unit Test') {
           steps {
-            sh 'make check'
+            dir('source') {
+              sh 'make check'
+            }
           }
         }
 
