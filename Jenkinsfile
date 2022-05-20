@@ -40,10 +40,12 @@ pipeline {
         stage('Initial Setup') {
           steps {
             // Make sure that no remainders from previous builds interfere.
-            sh 'libtoolize'
-            sh 'aclocal'
-            sh 'autoconf'
-            sh 'automake --add-missing'
+            dir('source') {
+              sh 'libtoolize'
+              sh 'aclocal'
+              sh 'autoconf'
+              sh 'automake --add-missing'
+            }
           }
         }
 
