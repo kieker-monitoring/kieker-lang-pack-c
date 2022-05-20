@@ -23,7 +23,7 @@ mkdir -p "${DEBIAN_STAGING}"
 echo "Copy data"
 
 cp -r "${SOURCE}" "${DEBIAN_STAGING_SOURCE}"
-rm -f "${DEBIAN_STAGING_SOURCE}//README"
+rm -f "${DEBIAN_STAGING_SOURCE}/README"
 cp -f "${BASE_DIR}/README.md" "${DEBIAN_STAGING_SOURCE}/README"
 
 # build
@@ -35,13 +35,18 @@ aclocal
 autoconf
 automake --add-missing
 ./configure
-#make
-#make distclean
 
 # create
 echo "Create archive"
 
 cd "${DEBIAN_STAGING}"
+
+find "${DEBIAN_STAGING}" -name '.libs' -exec rm -rf {} \;
+find "${DEBIAN_STAGING}" -name '.deps' -exec rm -rf {} \;
+find "${DEBIAN_STAGING}" -name '*.o' -exec rm {} \;
+find "${DEBIAN_STAGING}" -name '*.lo' -exec rm {} \;
+find "${DEBIAN_STAGING}" -name '*.la' -exec rm {} \;
+rm -rf "${DEBIAN_STAGING_SOURCE}/autom4te.cache" "${DEBIAN_STAGING_SOURCE}/m4" "${DEBIAN_STAGING_SOURCE}/autotools"
 
 tar -czpf "kieker-lang-pack-c_${VERSION}.orig.tar.gz" kieker-lang-pack-c
 
@@ -55,4 +60,3 @@ cd "${DEBIAN_STAGING_SOURCE}"
 debuild -us -uc
 
 # end
-
