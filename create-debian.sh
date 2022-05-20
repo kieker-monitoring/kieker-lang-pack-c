@@ -10,7 +10,12 @@ SOURCE="${BASE_DIR}/source"
 # prepare staging
 echo "Prepare staging"
 
+# cd "${SOURCE}"
+
+# make clean ; git clean -f
+
 rm -rf "${DEBIAN_STAGING}"
+rm -rf "${SOURCE}/m4"
 
 mkdir -p "${DEBIAN_STAGING}"
 
@@ -22,13 +27,16 @@ rm -f "${DEBIAN_STAGING_SOURCE}//README"
 cp -f "${BASE_DIR}/README.md" "${DEBIAN_STAGING_SOURCE}/README"
 
 # build
-
+echo "Build"
 cd "${DEBIAN_STAGING_SOURCE}"
 
 libtoolize
 aclocal
 autoconf
 automake --add-missing
+./configure
+#make
+#make distclean
 
 # create
 echo "Create archive"
@@ -38,7 +46,7 @@ cd "${DEBIAN_STAGING}"
 tar -czpf "kieker-lang-pack-c_${VERSION}.orig.tar.gz" kieker-lang-pack-c
 
 # Setup debian
-echo "Stetup Debian"
+echo "Setup Debian"
 
 cp -r "${BASE_DIR}/debian" "${DEBIAN_STAGING_SOURCE}"
 
