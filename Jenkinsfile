@@ -31,7 +31,7 @@ pipeline {
     stage('Build') {
       agent {
         docker {
-          image 'kieker/kieker-c-build'
+          image 'prefec2/kieker-c-build'
           alwaysPull false
           args env.DOCKER_ARGS
         }
@@ -49,6 +49,7 @@ pipeline {
 
         stage('Compile') {
           steps {
+            sh './configure'
             sh 'make'
           }
         }
