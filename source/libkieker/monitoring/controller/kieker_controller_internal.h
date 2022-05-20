@@ -19,6 +19,7 @@ typedef struct kieker_controller_state {
 	char *local_hostname;
 	const char *remote_hostname;
 	unsigned short remote_port;
+	const char *event_types_filename;
 } kieker_controller_state_t;
 
 /**

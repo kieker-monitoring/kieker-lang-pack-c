@@ -84,6 +84,8 @@ void kieker_controller_configure_variables() {
 			"KIEKER_HOSTNAME", KIEKER_DEFAULT_REMOTE_HOSTNAME);
 	kieker_controller.remote_port = kieker_controller_getenv_ushort(
 			"KIEKER_PORT", KIEKER_DEFAULT_REMOTE_PORT);
+	kieker_controller.event_types_filename = kieker_controller_getenv_string(
+			"KIEKER_EVENT_TYPE_FILENAME", KIEKER_DEFAULT_EVENT_TYPE_FILENAME);
 }
 
 void kieker_controller_setup_buffer() {
