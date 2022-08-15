@@ -6,7 +6,10 @@ pipeline {
 
   environment {
     DOCKER_ARGS = ''
+    UPDATE_SITE_URL = "sftp://repo@repo.se.internal/var/www/html/kieker"
+    DESTINATION = 'snapshot'
   }
+
 
   options {
     buildDiscarder logRotator(artifactNumToKeepStr: '3', artifactDaysToKeepStr: '5', daysToKeepStr: '4', numToKeepStr: '10')
@@ -75,6 +78,11 @@ pipeline {
         stage('Distribution Build') {
           steps {
             sh './create-debian.sh'
+          }
+        }
+        stage('Upload') {
+          steps {
+           
           }
         }
       }
