@@ -193,7 +193,6 @@ void kieker_controller_send_string(const char *string, int id) {
  * length = length of the data stored in the buffer
  */
 void kieker_controller_send(int length) {
-	fprintf(stderr, "send %d %d\n", kieker_controller.socket, length);
 	if (write(kieker_controller.socket, kieker_controller.buffer, length)
 			== -1) {
 		kieker_controller.error = errno;

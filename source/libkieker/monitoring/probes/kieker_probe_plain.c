@@ -12,7 +12,6 @@
 #include "kieker_probe_events.h"
 
 void kieker_probe_before_operation_event(const char* class_signature, const char* operation_signature) {
-	fprintf(stderr,"kieker_probe_before_operation_event\n");
 	int position = 0;
 
 	kieker_trace_t* trace = kieker_trace_get();
@@ -30,10 +29,8 @@ void kieker_probe_before_operation_event(const char* class_signature, const char
 }
 
 void kieker_probe_after_operation_event(const char* class_signature, const char* operation_signature) {
-	fprintf(stderr,"kieker_probe_after_operation_event\n");
-
 	int position = 0;
-	
+
 	kieker_trace_t* trace = kieker_trace_get();
 
 	trace->order_index++;
