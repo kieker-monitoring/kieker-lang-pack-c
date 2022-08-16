@@ -97,7 +97,7 @@ int kieker_io_socket_close(unsigned short socket) {
 
 	ling.l_onoff = 1; /* close will wait until all data is
 	 transmitted or the timeout period has expired */
-	ling.l_linger = 0; /* sets that timeout to 0 seconed */
+	ling.l_linger = 10; /* sets that timeout to 10 seconed */
 	setsockopt(socket, SOL_SOCKET, SO_LINGER, &ling, sizeof(ling));
 	return close(socket);
 }

@@ -1,5 +1,5 @@
 SUBDIRS=common monitoring
-ACLOCAL_AMFLAGS=-I m4
+ACLOCAL_AMFLAGS=-I m4 -g
 
 lib_LTLIBRARIES = libkieker.la
 

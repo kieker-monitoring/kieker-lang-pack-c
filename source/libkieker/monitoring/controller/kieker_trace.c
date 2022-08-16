@@ -86,8 +86,9 @@ void kieker_trace_delete(kieker_trace_t *data) {
 void kieker_trace_create(kieker_trace_t *trace, int thread_id,
 		long long trace_id) {
 	trace->trace_id = trace_id;
-	trace->thread_id = thread_id, trace->order_index = -1;
-	trace->stack = -1;
+	trace->thread_id = thread_id;
+	trace->order_index = -1;
+	trace->stack = 0;
 	trace->buffer = (char*) malloc(1024 * sizeof(char));
 }
 

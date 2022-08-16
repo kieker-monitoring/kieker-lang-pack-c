@@ -5,8 +5,11 @@
 #include "../../common/record/flow/trace/trace_metadata.h"
 #include <kieker_controller.h>
 
+#include <stdio.h>
+
 
 int kieker_probe_create_trace_metadata(int position, kieker_trace_t* trace) {
+	fprintf(stderr,"kieker_probe_create_trace_metadata\n");
 	kieker_common_record_flow_trace_trace_metadata trace_metadata;
 
 	trace_metadata.hostname = kieker_controller_get_hostname();
@@ -23,6 +26,8 @@ int kieker_probe_create_trace_metadata(int position, kieker_trace_t* trace) {
 }
 
 int kieker_probe_create_before_operation_event(int position, kieker_trace_t* trace, const char* class_signature, const char* operation_signature) {
+	fprintf(stderr,"kieker_probe_create_before_operation_event\n");
+
 	kieker_common_record_flow_trace_operation_before_operation_event event;
 
 	event.timestamp = kieker_controller_get_time_ms();
@@ -36,6 +41,8 @@ int kieker_probe_create_before_operation_event(int position, kieker_trace_t* tra
 }
 
 int kieker_probe_create_after_operation_event(int position, kieker_trace_t* trace, const char* class_signature, const char* operation_signature) {
+	fprintf(stderr,"kieker_probe_create_after_operation_event\n");
+
 	kieker_common_record_flow_trace_operation_after_operation_event event;
 
 	event.timestamp = kieker_controller_get_time_ms();
