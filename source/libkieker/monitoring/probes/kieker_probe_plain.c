@@ -29,12 +29,14 @@ void kieker_probe_before_operation_event(const char* class_signature, const char
 }
 
 void kieker_probe_after_operation_event(const char* class_signature, const char* operation_signature) {
+	int position = 0;
+	
 	kieker_trace_t* trace = kieker_trace_get();
 
-	int position = 0;
-	position = kieker_probe_create_after_operation_event(position, trace, class_signature ,operation_signature);
-
 	trace->order_index++;
+
+	position = kieker_probe_create_after_operation_event(position, trace, class_signature, operation_signature);
+
 	trace->stack--;
 
 	kieker_controller_send(position);
