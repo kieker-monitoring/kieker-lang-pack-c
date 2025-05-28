@@ -13,9 +13,10 @@ void kieker_probe_aspect_controlflow_initialize() {
 
 kieker_trace_t* kieker_probe_aspect_controlflow_before(kieker_common_record_controlflow_operation_execution_record* record) {
     /* get thread unique identifier */
-    int thread_id = (int) pthread_self();
+//  int thread_id = (int) pthread_self();
 
-    kieker_trace_t* trace = kieker_trace_get(thread_id);
+//  kieker_trace_t* trace = kieker_trace_get(thread_id);
+    kieker_trace_t* trace = kieker_trace_get();
 
     /* increment indexes */
     trace->order_index++;
