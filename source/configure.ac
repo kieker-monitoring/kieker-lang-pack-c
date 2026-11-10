@@ -46,7 +46,6 @@ AC_CONFIG_FILES(Makefile
 examples/Makefile
 examples/basic-example/Makefile
 examples/instrument-example/Makefile
-examples/bfd/Makefile
 libkieker/common/record/controlflow/Makefile
 libkieker/common/record/misc/Makefile
 libkieker/common/record/system/Makefile
